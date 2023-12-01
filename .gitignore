@@ -396,3 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Bronto/Bronto.Stocks.Console/appsettings.json
