@@ -1,0 +1,6 @@
+@Bronto.WebApi_HostAddress = http://localhost:5168
+
+GET {{Bronto.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
