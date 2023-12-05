@@ -69,6 +69,9 @@ namespace Bronto.Tests.Api
             // Assert
             Assert.NotNull(content);
             Assert.Contains("price", content);
+            Assert.True(response.IsSuccessStatusCode);
+            content.Should().NotBeNull();
+            content.Should().Contain("price");
         }
-    }   
+    }
 }
