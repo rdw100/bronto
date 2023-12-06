@@ -6,28 +6,28 @@ using Bronto.Tests.Api.Models;
 namespace Bronto.Tests.Api
 {
 
-    public class StockApi_GetQuote_Tests
+    public class StockApi_GetQuote_Tests : IClassFixture<StockFixture>
     {
+        private readonly StockFixture _fixture;
+
+        public StockApi_GetQuote_Tests(StockFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public async void StockApi_ShouldGetTimeSeriesAsync_ReturnsTrue()
         {
-            var builder = new ConfigurationBuilder();
-            builder.SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-            IConfiguration config = builder.Build();
-
-            string keyString = config.GetSection("AppSettings")["Key"];
-            string hostString = config.GetSection("AppSettings")["Host"];
-
             // ARRANGE
+            var keyString = _fixture.Key.ToString();
+            var hostString = _fixture.Host.ToString();
             var mockHttp = new MockHttpMessageHandler();
 
             mockHttp
-                .When($"https://{hostString}/*")
+                .When($"https://{_fixture.Host}/*")
                 .Respond("application/json", "{\"meta\":{\"symbol\":\"AAPL\",\"interval\":\"1min\",\"currency\":\"USD\",\"exchange_timezone\":\"America/New_York\",\"exchange\":\"NASDAQ\",\"type\":\"Common Stock\"},\"values\":[{\"datetime\":\"2023-12-01 00:00:00\",\"open\":\"191.13000\",\"high\":\"191.24500\",\"low\":\"191.12700\",\"close\":\"191.24500\",\"volume\":\"44707\"}],\"status\":\"ok\"}");
 
-            StockApiClient stockApiClient = new StockApiClient(keyString, mockHttp.ToHttpClient());
+            StockApiClient stockApiClient = new StockApiClient(_fixture.Key, mockHttp.ToHttpClient());
 
             // ACT
             var response = await stockApiClient.GetTimeSeriesAsync("AAPL");
@@ -49,18 +49,11 @@ namespace Bronto.Tests.Api
         [Fact]
         public async void StockApi_ShouldGetStockPriceAsync_ReturnsTrue()
         {
-            var builder = new ConfigurationBuilder();
-            builder.SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-            IConfiguration config = builder.Build();
-
-            string keyString = config.GetSection("AppSettings")["Key"];
-            string hostString = config.GetSection("AppSettings")["Host"];
-
             // Arrange
+            var keyString = _fixture.Key.ToString();
+            var hostString = _fixture.Host.ToString();
             var client = new HttpClient();
-            var url = $"https://{hostString}/price?symbol=AAPL&apikey={keyString}&source=docs";
+            var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}&source=docs";
 
             // Act
             var response = await client.GetAsync(url);
@@ -72,6 +65,29 @@ namespace Bronto.Tests.Api
             Assert.True(response.IsSuccessStatusCode);
             content.Should().NotBeNull();
             content.Should().Contain("price");
+        }
+    }
+
+    public class StockFixture : IDisposable
+    {
+        public string Key { get; set; }
+        public string Host { get; set; }
+
+        public StockFixture()
+        {
+            // Do global initialization here  
+            var builder = new ConfigurationBuilder();
+            builder.SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfiguration config = builder.Build();
+            Key = config.GetSection("AppSettings")["Key"];
+            Host = config.GetSection("AppSettings")["Host"];
+        }
+
+        public void Dispose()
+        {
+            // Do global teardown here
         }
     }
 }
