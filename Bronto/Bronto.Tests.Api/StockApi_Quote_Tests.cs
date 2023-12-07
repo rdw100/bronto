@@ -2,6 +2,7 @@ using FluentAssertions;
 using RichardSzalay.MockHttp;
 using Microsoft.Extensions.Configuration;
 using Bronto.Tests.Api.Models;
+using Bronto.Models.Api.Price.Response;
 
 namespace Bronto.Tests.Api
 {
@@ -16,11 +17,9 @@ namespace Bronto.Tests.Api
         }
 
         [Fact]
-        public async void StockApi_ShouldGetTimeSeriesAsync_ReturnsTrue()
+        public async void StockApiClient_ShouldGetTimeSeriesAsync_ReturnsTrue()
         {
             // ARRANGE
-            var keyString = _fixture.Key.ToString();
-            var hostString = _fixture.Host.ToString();
             var mockHttp = new MockHttpMessageHandler();
 
             mockHttp
@@ -50,10 +49,8 @@ namespace Bronto.Tests.Api
         public async void StockApi_ShouldGetStockPriceAsync_ReturnsTrue()
         {
             // Arrange
-            var keyString = _fixture.Key.ToString();
-            var hostString = _fixture.Host.ToString();
             var client = new HttpClient();
-            var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}&source=docs";
+            var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}";
 
             // Act
             var response = await client.GetAsync(url);
@@ -66,28 +63,70 @@ namespace Bronto.Tests.Api
             content.Should().NotBeNull();
             content.Should().Contain("price");
         }
+
+        [Fact]
+        public async void StockApiClient_ShouldGetStockPriceAsync_ReturnsTrue()
+        {
+            // ARRANGE
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp
+                .When($"https://{_fixture.Host}/*")
+                .Respond("application/json", "{\"price\":\"193.07001\"}");
+
+            StockApiClient stockApiClient = new StockApiClient(_fixture.Key, mockHttp.ToHttpClient());
+
+            // ACT
+            RealTimePrice response = await stockApiClient.GetRealTimePriceAsync("AAPL");
+
+            // ASSERT
+            double price;
+            if (double.TryParse(response.Price, out price))
+            {
+                price.Should().BeGreaterThan(0);
+                price.Should().BePositive();
+                price.Should().Be(193.07001);
+            }
+            else
+            {
+                Assert.NotNull(response);
+            }
+        }
     }
 
+    /// <summary>
+    /// Creates a single test context and share it among all the tests in the 
+    /// class, and have it cleaned up after all the tests in the class have 
+    /// finished.
+    /// </summary>
     public class StockFixture : IDisposable
     {
-        public string Key { get; set; }
-        public string Host { get; set; }
+        protected internal string Key { get; set; }
+        protected internal string Host { get; set; }
+        private ConfigurationBuilder builder { get; set; }
+        private IConfiguration config { get; set; }
 
+        /// <summary>
+        /// Initialize variables for shared object instance.
+        /// </summary>
         public StockFixture()
         {
-            // Do global initialization here  
-            var builder = new ConfigurationBuilder();
+            builder = new ConfigurationBuilder();
             builder.SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-            IConfiguration config = builder.Build();
+            config = builder.Build();
             Key = config.GetSection("AppSettings")["Key"];
             Host = config.GetSection("AppSettings")["Host"];
         }
 
+        /// <summary>
+        /// Dispose of shared object instance variables.
+        /// </summary>
         public void Dispose()
         {
-            // Do global teardown here
+            builder = null;
+            config = null;
         }
     }
 }

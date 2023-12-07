@@ -1,4 +1,5 @@
-﻿using Bronto.Tests.Api.Models;
+﻿using Bronto.Models.Api.Price.Response;
+using Bronto.Tests.Api.Models;
 using Newtonsoft.Json;
 
 namespace Bronto.Tests.Api
@@ -65,6 +66,16 @@ namespace Bronto.Tests.Api
                     ResponseMessage = e.ToString()
                 };
             }
+        }
+
+        public async Task<RealTimePrice> GetRealTimePriceAsync(string symbol)
+        {
+            string endpoint = "https://api.twelvedata.com/price?symbol=" + symbol + "&apikey=" + _apiKey;
+            var response = await _client.GetAsync(endpoint);
+            string responseString = await response.Content.ReadAsStringAsync();
+            RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
+
+            return responsePrice;
         }
     }
 }
