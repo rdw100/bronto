@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Bronto.Models.Api.Price.Response;
+using Newtonsoft.Json;
 
 namespace Bronto.Tests.Api.Models
 {
@@ -61,12 +62,12 @@ namespace Bronto.Tests.Api.Models
         public enum StockDataClientResponseStatus
         {
             Ok,
-            StockDataSharpError,
+            StockDataError,
             StockDataApiError
         }
     }
 
-    public class StockDataTimeSeries
+    public class StockDataTimeSeries : BaseResponse
     {
         public string Symbol { get; set; }
         public string Interval { get; set; }
@@ -75,8 +76,6 @@ namespace Bronto.Tests.Api.Models
         public string Type { get; set; }
         public string Currency { get; set; }
         public List<TimeSeriesValues> Values { get; set; }
-        public Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
-        public string ResponseMessage { get; set; } = "RESPONSE_OK";
     }
 
     public partial class TimeSeriesValues

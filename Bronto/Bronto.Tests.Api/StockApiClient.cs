@@ -62,7 +62,7 @@ namespace Bronto.Tests.Api
             {
                 return new StockDataTimeSeries()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataSharpError,
+                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()
                 };
             }
@@ -91,7 +91,7 @@ namespace Bronto.Tests.Api
             {
                 return new RealTimePrice()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataSharpError,
+                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()
                 };
             }
