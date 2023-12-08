@@ -1,15 +1,17 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Bronto.Tests.Api.Models;
+using Newtonsoft.Json;
 
 namespace Bronto.Models.Api.Price.Response
 {
-    public class RealTimePrice
+    public class RealTimePrice : BaseResponse
     {
         [JsonProperty("price")]
-        public string Price { get; set; }
+        public double Price { get; set; }
+    }
+
+    public class BaseResponse
+    {
+        public Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
+        public string ResponseMessage { get; set; } = "RESPONSE_OK";
     }
 }

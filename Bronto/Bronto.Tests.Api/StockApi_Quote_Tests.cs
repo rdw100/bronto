@@ -48,15 +48,15 @@ namespace Bronto.Tests.Api
         [Fact]
         public async void StockApi_ShouldGetStockPriceAsync_ReturnsTrue()
         {
-            // Arrange
+            // ARRANGE
             var client = new HttpClient();
             var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}";
 
-            // Act
+            // ACT
             var response = await client.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
-            // Assert
+            // ASSERT
             Assert.NotNull(content);
             Assert.Contains("price", content);
             Assert.True(response.IsSuccessStatusCode);
@@ -80,17 +80,10 @@ namespace Bronto.Tests.Api
             RealTimePrice response = await stockApiClient.GetRealTimePriceAsync("AAPL");
 
             // ASSERT
-            double price;
-            if (double.TryParse(response.Price, out price))
-            {
-                price.Should().BeGreaterThan(0);
-                price.Should().BePositive();
-                price.Should().Be(193.07001);
-            }
-            else
-            {
-                Assert.NotNull(response);
-            }
+            response.Should().NotBeNull();
+            response.Price.Should().BeGreaterThan(0);
+            response.Price.Should().BePositive();
+            response.Price.Should().Be(193.07001);
         }
     }
 

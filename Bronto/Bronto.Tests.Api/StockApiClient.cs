@@ -70,12 +70,31 @@ namespace Bronto.Tests.Api
 
         public async Task<RealTimePrice> GetRealTimePriceAsync(string symbol)
         {
-            string endpoint = "https://api.twelvedata.com/price?symbol=" + symbol + "&apikey=" + _apiKey;
-            var response = await _client.GetAsync(endpoint);
-            string responseString = await response.Content.ReadAsStringAsync();
-            RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
-
-            return responsePrice;
+            try
+            {
+                string endpoint = "https://api.twelvedata.com/price?symbol=" + symbol + "&apikey=" + _apiKey;
+                var response = await _client.GetAsync(endpoint);
+                string responseString = await response.Content.ReadAsStringAsync();
+                RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
+                if (responsePrice.Price.Equals(0))
+                {
+                    responsePrice.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    responsePrice.ResponseMessage = "Invalid symbol or key.";
+                    return responsePrice;
+                }
+                else 
+                {
+                    return responsePrice;
+                }
+            }
+            catch (Exception e)
+            {
+                return new RealTimePrice()
+                {
+                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataSharpError,
+                    ResponseMessage = e.ToString()
+                };
+            }
         }
     }
 }
