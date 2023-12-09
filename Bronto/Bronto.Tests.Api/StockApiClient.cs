@@ -1,6 +1,7 @@
 ﻿using Bronto.Models.Api.Price.Response;
 using Bronto.Tests.Api.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Bronto.Tests.Api
 {
@@ -15,6 +16,63 @@ namespace Bronto.Tests.Api
             _client = client;
         }
 
+        public async Task<RealTimePrice> GetRealTimePriceAsync(string symbol)
+        {
+            try
+            {
+                string endpoint = "https://api.twelvedata.com/price?symbol=" + symbol + "&apikey=" + _apiKey;
+                var response = await _client.GetAsync(endpoint);
+                string responseString = await response.Content.ReadAsStringAsync();
+                RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
+                if (responsePrice.Price.Equals(0))
+                {
+                    responsePrice.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    responsePrice.ResponseMessage = "Invalid symbol or key.";
+                    return responsePrice;                   
+                }
+                
+                return responsePrice;
+            }
+            catch (Exception e)
+            {
+                return new RealTimePrice()
+                {
+                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                    ResponseMessage = e.ToString()
+                };
+            }
+        }
+
+        public async Task<StockSymbolSearch> GetStockSymbolAsync(string symbol)
+        {
+            try
+            {
+                string endpoint = "https://api.twelvedata.com/symbol_search?symbol=" + symbol +
+                    "&show_plan=true"+
+                    "&apikey=" + _apiKey;
+                var response = await _client.GetAsync(endpoint);
+                string responseString = await response.Content.ReadAsStringAsync();
+                StockSymbolSearch responseSymbol = JsonConvert.DeserializeObject<StockSymbolSearch>(responseString);
+
+                if (string.IsNullOrEmpty(responseSymbol.Data.Symbol))
+                {
+                    responseSymbol.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    responseSymbol.ResponseMessage = "Invalid symbol or key.";
+                    return responseSymbol;
+                }
+                
+                return responseSymbol;
+            }
+            catch (Exception e)
+            {
+                return new StockSymbolSearch()
+                {
+                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                    ResponseMessage = e.ToString()
+                };
+            }
+        }
+        
         public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min")
         {
             try
@@ -51,45 +109,19 @@ namespace Bronto.Tests.Api
                     Values = values
                 };
 
-                if (!string.IsNullOrEmpty(timeSeries?.Symbol) && values.Count != 0)
+                if (string.IsNullOrEmpty(timeSeries?.Symbol) || values.Count == 0)
+                {
+                    timeSeries.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    timeSeries.ResponseMessage = "Invalid symbol or API key";
+
                     return timeSeries;
-                timeSeries.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
-                timeSeries.ResponseMessage = "Invalid symbol or API key";
+                }
 
                 return timeSeries;
             }
             catch (Exception e)
             {
                 return new StockDataTimeSeries()
-                {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
-                    ResponseMessage = e.ToString()
-                };
-            }
-        }
-
-        public async Task<RealTimePrice> GetRealTimePriceAsync(string symbol)
-        {
-            try
-            {
-                string endpoint = "https://api.twelvedata.com/price?symbol=" + symbol + "&apikey=" + _apiKey;
-                var response = await _client.GetAsync(endpoint);
-                string responseString = await response.Content.ReadAsStringAsync();
-                RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
-                if (responsePrice.Price.Equals(0))
-                {
-                    responsePrice.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
-                    responsePrice.ResponseMessage = "Invalid symbol or key.";
-                    return responsePrice;
-                }
-                else 
-                {
-                    return responsePrice;
-                }
-            }
-            catch (Exception e)
-            {
-                return new RealTimePrice()
                 {
                     ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()

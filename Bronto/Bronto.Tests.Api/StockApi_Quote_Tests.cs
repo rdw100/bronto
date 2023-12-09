@@ -17,6 +17,89 @@ namespace Bronto.Tests.Api
         }
 
         [Fact]
+        public async void StockApi_ShouldGetStockPriceAsync_ReturnsTrue()
+        {
+            // ARRANGE
+            var client = new HttpClient();
+            var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}";
+
+            // ACT
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // ASSERT
+            Assert.NotNull(content);
+            Assert.Contains("price", content);
+            Assert.True(response.IsSuccessStatusCode);
+            content.Should().NotBeNull();
+            content.Should().Contain("price");
+        }
+
+        [Fact]
+        public async void StockApi_ShouldGetStockSymbolAsync_ReturnsTrue() 
+        {
+            // ARRANGE
+            var client = new HttpClient();
+            var url = $"https://{_fixture.Host}/symbol_search?symbol=AAPL&apikey={_fixture.Key}";
+
+            // ACT
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // ASSERT
+            Assert.NotNull(content);
+            Assert.Contains("symbol", content);
+            Assert.True(response.IsSuccessStatusCode);
+            content.Should().NotBeNull();
+            content.Should().Contain("symbol");
+        }
+
+        [Fact]
+        public async void StockApiClient_ShouldGetStockPriceAsync_ReturnsTrue()
+        {
+            // ARRANGE
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp
+                .When($"https://{_fixture.Host}/*")
+                .Respond("application/json", "{\"price\":\"193.07001\"}");
+
+            StockApiClient stockApiClient = new StockApiClient(_fixture.Key, mockHttp.ToHttpClient());
+
+            // ACT
+            RealTimePrice response = await stockApiClient.GetRealTimePriceAsync("AAPL");
+
+            // ASSERT
+            response.Should().NotBeNull();
+            response.Price.Should().BeGreaterThan(0);
+            response.Price.Should().BePositive();
+            response.Price.Should().Be(193.07001);
+        }
+
+        [Fact]
+        public async void StockApiClient_ShouldGetStockSymbolAsync_ReturnsTrue()
+        {
+            // ARRANGE
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp
+                .When($"https://{_fixture.Host}/*")
+                .Respond("application/json", "{\"data\":{\"symbol\":\"AAPL\",\"instrument_name\":\"Apple Inc\",\"exchange\":\"NASDAQ\",\"mic_code\":\"XNGS\",\"exchange_timezone\":\"America/New_York\",\"instrument_type\":\"Common Stock\",\"country\":\"United States\",\"currency\":\"USD\",\"access\":{\"global\":\"Basic\",\"plan\":\"Basic\"}},\"status\":\"ok\"}");
+
+            StockApiClient stockApiClient = new StockApiClient(_fixture.Key, mockHttp.ToHttpClient());
+
+            // ACT
+            var response = await stockApiClient.GetStockSymbolAsync("AAPL");
+
+            // ASSERT
+            response?.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response?.ResponseMessage.Should().Be("RESPONSE_OK");
+            response?.Should().NotBeNull();
+            response?.Data.Symbol.Should().Be("AAPL");
+            response?.Data.Access.Plan.Should().Be("Basic");
+        }
+
+        [Fact]
         public async void StockApiClient_ShouldGetTimeSeriesAsync_ReturnsTrue()
         {
             // ARRANGE
@@ -43,47 +126,6 @@ namespace Bronto.Tests.Api
             response?.Values[0]?.Low.Should().Be(191.12700);
             response?.Values[0]?.Close.Should().Be(191.24500);
             response?.Values[0]?.Volume.Should().Be(44707);
-        }
-
-        [Fact]
-        public async void StockApi_ShouldGetStockPriceAsync_ReturnsTrue()
-        {
-            // ARRANGE
-            var client = new HttpClient();
-            var url = $"https://{_fixture.Host}/price?symbol=AAPL&apikey={_fixture.Key}";
-
-            // ACT
-            var response = await client.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
-
-            // ASSERT
-            Assert.NotNull(content);
-            Assert.Contains("price", content);
-            Assert.True(response.IsSuccessStatusCode);
-            content.Should().NotBeNull();
-            content.Should().Contain("price");
-        }
-
-        [Fact]
-        public async void StockApiClient_ShouldGetStockPriceAsync_ReturnsTrue()
-        {
-            // ARRANGE
-            var mockHttp = new MockHttpMessageHandler();
-
-            mockHttp
-                .When($"https://{_fixture.Host}/*")
-                .Respond("application/json", "{\"price\":\"193.07001\"}");
-
-            StockApiClient stockApiClient = new StockApiClient(_fixture.Key, mockHttp.ToHttpClient());
-
-            // ACT
-            RealTimePrice response = await stockApiClient.GetRealTimePriceAsync("AAPL");
-
-            // ASSERT
-            response.Should().NotBeNull();
-            response.Price.Should().BeGreaterThan(0);
-            response.Price.Should().BePositive();
-            response.Price.Should().Be(193.07001);
         }
     }
 
