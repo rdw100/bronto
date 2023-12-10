@@ -35,6 +35,28 @@ namespace Bronto.Tests.Api
             content.Should().Contain("price");
         }
 
+        [Theory]
+        [InlineData(new object[] { new string[] { "AAPL", "GOOGL", "TSLA", "NVDA" }})]
+        public async void StockApi_ShouldGetStockPricesMultipleAsync_ReturnsTrue(string[] symbols)
+        {
+            // ARRANGE
+            var querySymbols = string.Join(",", symbols);
+            var client = new HttpClient();
+            var url = $"https://{_fixture.Host}/price?symbol={querySymbols}&apikey={_fixture.Key}";
+
+            // ACT
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // ASSERT
+            Assert.NotNull(content);
+            Assert.Contains("AAPL", content);
+            Assert.Contains("GOOGL", content);
+            Assert.Contains("TSLA", content);
+            Assert.Contains("NVDA", content);
+            Assert.True(response.IsSuccessStatusCode);
+        }
+
         [Fact]
         public async void StockApi_ShouldGetStockSymbolAsync_ReturnsTrue() 
         {
