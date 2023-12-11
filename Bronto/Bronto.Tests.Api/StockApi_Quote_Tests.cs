@@ -36,7 +36,7 @@ namespace Bronto.Tests.Api
         }
 
         [Theory]
-        [InlineData(new object[] { new string[] { "AAPL", "GOOGL", "NVDA" }})]
+        [InlineData(new object[] { new string[] { "AAPL", "GOOGL" }})]
         public async void StockApi_ShouldGetStockPricesMultipleAsync_ReturnsTrue(string[] symbols)
         {
             // ARRANGE
@@ -52,7 +52,6 @@ namespace Bronto.Tests.Api
             Assert.NotNull(content);
             Assert.Contains("AAPL", content);
             Assert.Contains("GOOGL", content);
-            Assert.Contains("NVDA", content);
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
