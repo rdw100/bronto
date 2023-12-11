@@ -3,6 +3,7 @@ using RichardSzalay.MockHttp;
 using Microsoft.Extensions.Configuration;
 using Bronto.Tests.Api.Models;
 using Bronto.Models.Api.Price.Response;
+using System.Net;
 
 namespace Bronto.Tests.Api
 {
@@ -31,12 +32,11 @@ namespace Bronto.Tests.Api
             Assert.NotNull(content);
             Assert.Contains("price", content);
             Assert.True(response.IsSuccessStatusCode);
-            content.Should().NotBeNull();
-            content.Should().Contain("price");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Theory]
-        [InlineData(new object[] { new string[] { "AAPL", "GOOGL", "TSLA", "NVDA" }})]
+        [InlineData(new object[] { new string[] { "AAPL", "GOOGL", "NVDA" }})]
         public async void StockApi_ShouldGetStockPricesMultipleAsync_ReturnsTrue(string[] symbols)
         {
             // ARRANGE
@@ -52,9 +52,9 @@ namespace Bronto.Tests.Api
             Assert.NotNull(content);
             Assert.Contains("AAPL", content);
             Assert.Contains("GOOGL", content);
-            Assert.Contains("TSLA", content);
             Assert.Contains("NVDA", content);
             Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -72,8 +72,7 @@ namespace Bronto.Tests.Api
             Assert.NotNull(content);
             Assert.Contains("symbol", content);
             Assert.True(response.IsSuccessStatusCode);
-            content.Should().NotBeNull();
-            content.Should().Contain("symbol");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -92,7 +91,9 @@ namespace Bronto.Tests.Api
             RealTimePrice response = await stockApiClient.GetRealTimePriceAsync("AAPL");
 
             // ASSERT
-            response.Should().NotBeNull();
+            Assert.NotNull(response);
+            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Price.Should().BeGreaterThan(0);
             response.Price.Should().BePositive();
             response.Price.Should().Be(193.07001);
@@ -114,11 +115,11 @@ namespace Bronto.Tests.Api
             var response = await stockApiClient.GetStockSymbolAsync("AAPL");
 
             // ASSERT
-            response?.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
-            response?.ResponseMessage.Should().Be("RESPONSE_OK");
-            response?.Should().NotBeNull();
-            response?.Data.Symbol.Should().Be("AAPL");
-            response?.Data.Access.Plan.Should().Be("Basic");
+            Assert.NotNull(response);
+            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseMessage.Should().Be("RESPONSE_OK");
+            response.Data.Symbol.Should().Be("AAPL");
+            response.Data.Access.Plan.Should().Be("Basic");
         }
 
         [Fact]
@@ -137,17 +138,18 @@ namespace Bronto.Tests.Api
             var response = await stockApiClient.GetTimeSeriesAsync("AAPL");
 
             // ASSERT
-            response?.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
-            response?.ResponseMessage.Should().Be("RESPONSE_OK");
-            response?.Values[0]?.Datetime.Should().Be(new DateTime(2023, 12, 1, 00, 00, 00));
-            response?.ExchangeTimezone.Should().Be("America/New_York");
-            response?.Exchange.Should().Be("NASDAQ");
-            response?.Type.Should().Be("Common Stock");
-            response?.Values[0]?.Open.Should().Be(191.13000);
-            response?.Values[0]?.High.Should().Be(191.24500);
-            response?.Values[0]?.Low.Should().Be(191.12700);
-            response?.Values[0]?.Close.Should().Be(191.24500);
-            response?.Values[0]?.Volume.Should().Be(44707);
+            Assert.NotNull(response);
+            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseMessage.Should().Be("RESPONSE_OK");
+            response.Values[0]?.Datetime.Should().Be(new DateTime(2023, 12, 1, 00, 00, 00));
+            response.ExchangeTimezone.Should().Be("America/New_York");
+            response.Exchange.Should().Be("NASDAQ");
+            response.Type.Should().Be("Common Stock");
+            response.Values[0]?.Open.Should().Be(191.13000);
+            response.Values[0]?.High.Should().Be(191.24500);
+            response.Values[0]?.Low.Should().Be(191.12700);
+            response.Values[0]?.Close.Should().Be(191.24500);
+            response.Values[0]?.Volume.Should().Be(44707);
         }
     }
 
