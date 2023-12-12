@@ -31,7 +31,8 @@ namespace Bronto.Tests.Api
             // ASSERT
             Assert.NotNull(content);
             Assert.Contains("price", content);
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.IsSuccessStatusCode, 
+                $"Actual status code: {response.StatusCode}.");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -52,7 +53,8 @@ namespace Bronto.Tests.Api
             Assert.NotNull(content);
             Assert.Contains("AAPL", content);
             Assert.Contains("GOOGL", content);
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.IsSuccessStatusCode,
+                $"Actual status code: {response.StatusCode}.");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -70,7 +72,8 @@ namespace Bronto.Tests.Api
             // ASSERT
             Assert.NotNull(content);
             Assert.Contains("symbol", content);
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.IsSuccessStatusCode,
+                $"Actual status code: {response.StatusCode}.");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -91,7 +94,10 @@ namespace Bronto.Tests.Api
 
             // ASSERT
             Assert.NotNull(response);
-            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseStatus
+                .Should()
+                .Be(Enums.StockDataClientResponseStatus.Ok, 
+                    $"Actual status code: { response.ResponseStatus }.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Price.Should().BeGreaterThan(0);
             response.Price.Should().BePositive();
@@ -115,7 +121,10 @@ namespace Bronto.Tests.Api
 
             // ASSERT
             Assert.NotNull(response);
-            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseStatus
+                .Should()
+                .Be(Enums.StockDataClientResponseStatus.Ok,
+                    $"Actual status code: {response.ResponseStatus}.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Data.Symbol.Should().Be("AAPL");
             response.Data.Access.Plan.Should().Be("Basic");
@@ -138,7 +147,10 @@ namespace Bronto.Tests.Api
 
             // ASSERT
             Assert.NotNull(response);
-            response.ResponseStatus.Should().Be(Enums.StockDataClientResponseStatus.Ok);
+            response.ResponseStatus
+                .Should()
+                .Be(Enums.StockDataClientResponseStatus.Ok,
+                    $"Actual status code: {response.ResponseStatus}.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Values[0]?.Datetime.Should().Be(new DateTime(2023, 12, 1, 00, 00, 00));
             response.ExchangeTimezone.Should().Be("America/New_York");

@@ -7,6 +7,7 @@ namespace Bronto.Tests.Api
     {
         [JsonProperty("data")]
         public Data Data { get; set; }
+
         [JsonProperty("status")]
         public string Status { get; set; }
     }
@@ -30,8 +31,10 @@ namespace Bronto.Tests.Api
 
         [JsonProperty("country")]
         public string Country { get; set; }
+
         [JsonProperty("currency")]
         public string Currency { get; set; }
+
         [JsonProperty("access")]
         public Access Access { get; set; }
     }
