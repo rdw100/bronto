@@ -1,0 +1,27 @@
+﻿@page "/StockTicker"
+@using System.Threading.Tasks
+@using Bronto.Wasm.Pwa.Models
+@using Bronto.Wasm.Pwa.Service
+@inject HttpClient httpClient
+
+<h3>Stock Ticker</h3>
+
+@if (stock != null)
+{
+    <p>Ticker Symbol: @stock.TickerSymbol</p>
+    <p>Price: @stock.Price.ToString("C")</p>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private Stock stock;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StockService stockService = new StockService(httpClient);
+        stock = new Stock { TickerSymbol = "AAPL", Price = await stockService.GetStockPriceAsync("AAPL") };
+    }
+}
