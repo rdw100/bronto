@@ -1,0 +1,19 @@
+﻿@page "/plot"
+@using ScottPlot
+@using ScottPlot.Blazor
+
+<h1>ScottPlot 5 in Blazor</h1>
+
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+
+@code {
+
+    BlazorPlot BlazorPlot { get; set; } = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        double[] dataX = { 1, 2, 3, 4, 5 };
+        double[] dataY = { 1, 4, 9, 16, 25 };
+        BlazorPlot.Plot.Add.Scatter(dataX, dataY);
+    }
+}

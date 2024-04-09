@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Models", "Bronto.Mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Tests.Api", "Bronto.Tests.Api\Bronto.Tests.Api.csproj", "{DCBBE1DE-B4D6-4917-95FF-546846433F02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bronto.Wasm.Pwa", "Bronto.Wasm.Pwa\Bronto.Wasm.Pwa.csproj", "{DCFF0CAA-9024-41C4-9451-0F3F54444936}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Wasm.Pwa", "Bronto.Wasm.Pwa\Bronto.Wasm.Pwa.csproj", "{DCFF0CAA-9024-41C4-9451-0F3F54444936}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
