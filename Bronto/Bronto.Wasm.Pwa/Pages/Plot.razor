@@ -12,8 +12,25 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        double[] dataX = { 1, 2, 3, 4, 5 };
-        double[] dataY = { 1, 4, 9, 16, 25 };
-        BlazorPlot.Plot.Add.Scatter(dataX, dataY);
+        var prices = Generate.RandomOHLCs(75);
+        BlazorPlot.Plot.Add.Candlestick(prices);
+        BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+        // calculate SMA and display it as a scatter plot
+        int[] windowSizes = { 3, 8, 20 };
+        foreach (int windowSize in windowSizes)
+        {
+            ScottPlot.Finance.SimpleMovingAverage sma = new(prices, windowSize);
+            var sp = BlazorPlot.Plot.Add.Scatter(sma.Dates, sma.Means);
+            sp.Label = $"SMA {windowSize}";
+            sp.MarkerSize = 0;
+            sp.LineWidth = 3;
+            sp.Color = Colors.Navy.WithAlpha(1 - windowSize / 30.0);
+        }
+        BlazorPlot.Plot.ShowLegend();
+        BlazorPlot.Plot.SavePng("demo.png", 500, 400);
+
+        // double[] dataX = { 1, 2, 3, 4, 5 };
+        // double[] dataY = { 1, 4, 9, 16, 25 };
+        // BlazorPlot.Plot.Add.Scatter(dataX, dataY);
     }
 }
