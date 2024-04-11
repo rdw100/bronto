@@ -1,8 +1,10 @@
-﻿@page "/plot"
+﻿@page "/moving"
 @using ScottPlot
 @using ScottPlot.Blazor
 
 <h1>ScottPlot 5 in Blazor</h1>
+<h2>Financial Plot</h2>
+<h3>Simple Moving Average</h3>
 
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
@@ -15,6 +17,7 @@
         var prices = Generate.RandomOHLCs(75);
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+
         // calculate SMA and display it as a scatter plot
         int[] windowSizes = { 3, 8, 20 };
         foreach (int windowSize in windowSizes)
@@ -26,11 +29,8 @@
             sp.LineWidth = 3;
             sp.Color = Colors.Navy.WithAlpha(1 - windowSize / 30.0);
         }
+
         BlazorPlot.Plot.ShowLegend();
         BlazorPlot.Plot.SavePng("demo.png", 500, 400);
-
-        // double[] dataX = { 1, 2, 3, 4, 5 };
-        // double[] dataY = { 1, 4, 9, 16, 25 };
-        // BlazorPlot.Plot.Add.Scatter(dataX, dataY);
     }
 }

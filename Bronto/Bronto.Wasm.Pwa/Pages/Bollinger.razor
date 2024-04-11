@@ -1,0 +1,42 @@
+﻿@page "/bollinger"
+@using ScottPlot
+@using ScottPlot.Blazor
+
+<h1>ScottPlot 5 in Blazor</h1>
+<h2>Financial Plot</h2>
+<h3>Bollinger Bands</h3>
+
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+
+@code {
+
+    BlazorPlot BlazorPlot { get; set; } = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // generate and plot time series price data
+        var prices = Generate.RandomOHLCs(100);
+        BlazorPlot.Plot.Add.Candlestick(prices);
+        BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+
+        // calculate Bollinger Bands
+        ScottPlot.Finance.BollingerBands bb = new(prices, 20);
+
+        // display center line (mean) as a solid line
+        var sp1 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.Means);
+        sp1.MarkerSize = 0;
+        sp1.Color = Colors.Navy;
+
+        // display upper bands (positive variance) as a dashed line
+        var sp2 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.UpperValues);
+        sp2.MarkerSize = 0;
+        sp2.Color = Colors.Navy;
+        sp2.LinePattern = LinePattern.Dotted;
+
+        // display lower bands (positive variance) as a dashed line
+        var sp3 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.LowerValues);
+        sp3.MarkerSize = 0;
+        sp3.Color = Colors.Navy;
+        sp3.LinePattern = LinePattern.Dotted;
+    }
+}
