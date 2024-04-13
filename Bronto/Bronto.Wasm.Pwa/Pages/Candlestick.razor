@@ -14,7 +14,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        var prices = Generate.RandomOHLCs(30);
+        List<OHLC> prices = Generate.RandomOHLCs(30);
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
     }

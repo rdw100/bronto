@@ -15,7 +15,7 @@
     protected override void OnAfterRender(bool firstRender)
     {
         // generate and plot time series price data
-        var prices = Generate.RandomOHLCs(100);
+        List<OHLC> prices = Generate.RandomOHLCs(100);
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
 
