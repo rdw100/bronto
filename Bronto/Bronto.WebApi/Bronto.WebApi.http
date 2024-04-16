@@ -1,6 +1,6 @@
 @Bronto.WebApi_HostAddress = http://localhost:5168
 
-GET {{Bronto.WebApi_HostAddress}}/weatherforecast/
+GET {{Bronto.WebApi_HostAddress}}/api/TimeSeries?symbol=ROP&interval=1min
 Accept: application/json
 
 ###
