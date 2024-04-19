@@ -27,7 +27,7 @@ namespace Bronto.WebApi.Controllers
         {
             try
             {
-                string endpoint = $"https://{Host}/time_series?symbol={symbol}&interval={interval}&apikey={Key}";
+                string endpoint = $"time_series?symbol={symbol}&interval={interval}&apikey={Key}";
 
                 var response = await _client.GetAsync(endpoint);
                 string responseString = await response.Content.ReadAsStringAsync();
