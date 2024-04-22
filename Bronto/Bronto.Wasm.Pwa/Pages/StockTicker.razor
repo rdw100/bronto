@@ -1,15 +1,36 @@
 ﻿@page "/stockticker"
 @using System.Threading.Tasks
+@using Bronto.Models.Api
 @using Bronto.Wasm.Pwa.Models
 @using Bronto.Wasm.Pwa.Service
-@inject HttpClient httpClient
+@inject StockService stockService
+<h2>OHLC Stock Data</h2>
 
-<h3>Stock Ticker</h3>
-
-@if (stock != null)
+@if (StockDataList != null)
 {
-    <p>Ticker Symbol: @stock.TickerSymbol</p>
-    <p>Price: @stock.Price.ToString("C")</p>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Open</th>
+                <th scope="col">High</th>
+                <th scope="col">Low</th>
+                <th scope="col">Close</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TimeSeriesValues item in ohlcList)
+            {
+                <tr>
+                <td>@item.Datetime</td>
+                <td>@item.Open.ToString("C")</td>
+                <td>@item.High.ToString("C")</td>
+                <td>@item.Low.ToString("C")</td>
+                <td>@item.Close.ToString("C")</td>
+                </tr>
+            } 
+        </tbody>
+    </table>
 }
 else
 {
@@ -17,11 +38,12 @@ else
 }
 
 @code {
-    private Stock stock;
+    public StockDataTimeSeries StockDataList;
+    protected List<TimeSeriesValues> ohlcList = new();
 
     protected override async Task OnInitializedAsync()
     {
-        StockService stockService = new StockService(httpClient);
-        stock = new Stock { TickerSymbol = "AAPL", Price = await stockService.GetStockPriceAsync("AAPL") };
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
+        ohlcList = StockDataList.Values.ToList();
     }
 }
