@@ -1,6 +1,6 @@
 ﻿using Bronto.Models.Api;
+using Bronto.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace Bronto.WebApi.Controllers
 {
@@ -8,18 +8,14 @@ namespace Bronto.WebApi.Controllers
     [ApiController]
     public class TimeSeriesController : ControllerBase
     {
-        private readonly HttpClient _client;
+        private readonly TimeSeriesService _timeSeriesService;
+        private readonly IConfiguration _config;
         protected internal string Key { get; set; }
-        protected internal string Host { get; set; }
-        private IConfiguration config { get; set; }
 
-        public TimeSeriesController(IConfiguration iConfig)
+        public TimeSeriesController(IConfiguration config)
         {
-            config = iConfig;
-            Key = config.GetSection("AppSettings")["Key"];
-            Host = config.GetSection("AppSettings")["Host"];
-            _client = new HttpClient();
-            _client.BaseAddress = new Uri($"https://{Host}");
+            _config = config;
+            _timeSeriesService = new TimeSeriesService(_config);
         }
 
         [HttpGet]
@@ -27,54 +23,23 @@ namespace Bronto.WebApi.Controllers
         {
             try
             {
-                string endpoint = $"time_series?symbol={symbol}&interval={interval}&apikey={Key}";
-
-                var response = await _client.GetAsync(endpoint);
-                string responseString = await response.Content.ReadAsStringAsync();
-                var jsonResponse = JsonConvert.DeserializeObject<StockTimeSeries>(responseString);
-                List<TimeSeriesValues> values = new List<TimeSeriesValues>();
-                var tsStockValues = jsonResponse?.Values;
-                if (tsStockValues != null)
+                var timeSeriesData = await _timeSeriesService.GetTimeSeriesAsync(symbol, interval);
+                if (timeSeriesData != null)
                 {
-                    values.AddRange(tsStockValues.Select(v => new TimeSeriesValues()
+                    return timeSeriesData;
+                }
+                else
+                {
+                    return new StockDataTimeSeries()
                     {
-                        Datetime = v?.Datetime ?? DateTime.MinValue,
-                        Open = Convert.ToDouble(v?.Open),
-                        High = Convert.ToDouble(v?.High),
-                        Low = Convert.ToDouble(v?.Low),
-                        Close = Convert.ToDouble(v?.Close),
-                        Volume = v.Volume
-                    }));
-                }
-
-                StockDataTimeSeries timeSeries = new StockDataTimeSeries()
-                {
-                    Symbol = jsonResponse?.Meta?.Symbol,
-                    Interval = jsonResponse?.Meta?.Interval,
-                    ExchangeTimezone = jsonResponse?.Meta?.ExchangeTimezone,
-                    Exchange = jsonResponse?.Meta?.Exchange,
-                    Type = jsonResponse?.Meta?.Type,
-                    Currency = jsonResponse?.Meta?.Currency,
-                    Values = values
-                };
-
-                if (string.IsNullOrEmpty(timeSeries?.Symbol) || values.Count == 0)
-                {
-                    timeSeries.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
-                    timeSeries.ResponseMessage = "Invalid symbol or API key";
-
-                    return timeSeries;
-                }
-
-                return timeSeries;
+                        ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                        ResponseMessage = "Error retrieving stock data"
+                    };
+                }                    
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return new StockDataTimeSeries()
-                {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
-                    ResponseMessage = e.ToString()
-                };
+                throw;
             }
         }
     }

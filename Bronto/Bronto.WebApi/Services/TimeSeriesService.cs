@@ -13,12 +13,13 @@ namespace Bronto.WebApi.Services
         protected internal string Host { get; set; }
         protected internal string uriString { get; set; }
 
-        public TimeSeriesService()
+        public TimeSeriesService(IConfiguration iConfig)
         {
+            config = iConfig;
             Key = config.GetSection("AppSettings")["Key"];
             Host = config.GetSection("AppSettings")["Host"];
             _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri(Host);
+            _httpClient.BaseAddress = new Uri($"https://{Host}");
         }
 
         public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min")
@@ -69,7 +70,6 @@ namespace Bronto.WebApi.Services
                 }
                 else
                 {
-                    // Handle error response
                     return null;
                 }
             }
