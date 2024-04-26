@@ -85,5 +85,6 @@ namespace Bronto.Models.Api
         public double Low { get; set; }
         public double Close { get; set; }
         public long Volume { get; set; }
+        public TimeSpan TimeSpan { get; set; }
     }
 }
