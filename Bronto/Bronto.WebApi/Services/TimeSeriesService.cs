@@ -38,12 +38,13 @@ namespace Bronto.WebApi.Services
                     {
                         values.AddRange(tsStockValues.Select(v => new TimeSeriesValues()
                         {
-                            Datetime = v?.Datetime ?? DateTime.MinValue,
+                            Datetime = v.Datetime, // v?.Datetime, ?? DateTime.MinValue,
                             Open = Convert.ToDouble(v?.Open),
                             High = Convert.ToDouble(v?.High),
                             Low = Convert.ToDouble(v?.Low),
                             Close = Convert.ToDouble(v?.Close),
-                            Volume = v.Volume
+                            Volume = v.Volume,
+                            TimeSpan = TimeSpan.FromDays(1.0)
                         }));
                     }
 
