@@ -19,7 +19,7 @@ namespace Bronto.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min")
+        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1day")
         {
             try
             {
