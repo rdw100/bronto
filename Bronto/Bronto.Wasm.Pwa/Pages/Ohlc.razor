@@ -1,6 +1,5 @@
 ﻿@page "/ohlc"
 @using AutoMapper
-@using Bronto.Models
 @using Bronto.Models.Api
 @using Bronto.Wasm.Pwa.Service
 @using ScottPlot
@@ -14,36 +13,33 @@
 <BlazorPlot @ref=BlazorPlot Style="width: 600px; height: 500px;"/>
 
 @code {
-
-    BlazorPlot BlazorPlot { get; set; } = new();
     private StockDataTimeSeries StockDataList;
-    protected List<TimeSeriesValues> ohlcList = new();
-    
+    private List<OHLC> prices { get; set; } = new();
+    BlazorPlot BlazorPlot { get; set; } = new();
+
     protected override async Task OnInitializedAsync()
     {
-        await GetStocks();
+        prices = await GetStocks();
+
+        BlazorPlot.Plot.Add.OHLC(prices);
+        BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+        BlazorPlot.Plot.XLabel("Time");
+        BlazorPlot.Plot.YLabel("Price");
+        BlazorPlot.Plot.Title("OHLC");
+        BlazorPlot.Refresh();
+    }
+
+    protected async Task<List<OHLC>> GetStocks()
+    {
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
 
         @if (StockDataList != null)
         {
-            ohlcList = StockDataList.Values.ToList();
-
             // Use AutoMapper mapping ScottPlot's OHLC
             var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
             var mapper = config.CreateMapper();
-            List<OHLC> prices = mapper.Map<List<OHLC>>(ohlcList);
-
-            BlazorPlot.Plot.Add.OHLC(prices);
-            BlazorPlot.Plot.Axes.DateTimeTicksBottom();
-            BlazorPlot.Plot.ShowLegend();
-            BlazorPlot.Plot.XLabel("Time");
-            BlazorPlot.Plot.YLabel("Price");
-            BlazorPlot.Plot.Title("OHLC");
-            BlazorPlot.Refresh();
+            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
         }
-    }
-
-    protected async Task GetStocks()
-    {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
+        return prices;
     }
 }

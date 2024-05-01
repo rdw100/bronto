@@ -29,7 +29,6 @@
         BlazorPlot.Refresh();
     }
 
-    // Use AutoMapper mapping ScottPlot's OHLC
     protected async Task<List<OHLC>> GetStocks()
     {
         StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
