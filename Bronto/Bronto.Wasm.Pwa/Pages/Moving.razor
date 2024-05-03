@@ -1,6 +1,10 @@
 ﻿@page "/moving"
+@using AutoMapper
+@using Bronto.Models.Api
+@using Bronto.Wasm.Pwa.Service
 @using ScottPlot
 @using ScottPlot.Blazor
+@inject StockService stockService
 
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
@@ -9,12 +13,13 @@
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
 @code {
-
+    private StockDataTimeSeries StockDataList { get; set; }
+    private List<OHLC> prices { get; set; } = new();
     BlazorPlot BlazorPlot { get; set; } = new();
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        List<OHLC> prices = Generate.RandomOHLCs(75);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {        
+        prices = await GetStocks();
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
 
@@ -31,6 +36,20 @@
         }
 
         BlazorPlot.Plot.ShowLegend();
-        BlazorPlot.Plot.SavePng("demo.png", 500, 400);
+        BlazorPlot.Refresh();
+    }
+
+    protected async Task<List<OHLC>> GetStocks()
+    {
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL", "1day", "75");
+
+        @if (StockDataList != null)
+        {
+            // Use AutoMapper mapping ScottPlot's OHLC
+            var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
+            var mapper = config.CreateMapper();
+            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
+        }
+        return prices;
     }
 }
