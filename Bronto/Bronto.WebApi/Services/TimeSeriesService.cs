@@ -22,11 +22,11 @@ namespace Bronto.WebApi.Services
             _httpClient.BaseAddress = new Uri($"https://{Host}");
         }
 
-        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min")
+        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval, string outputsize)
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync($"time_series?symbol={symbol}&interval={interval}&apikey={Key}");
+                HttpResponseMessage response = await _httpClient.GetAsync($"time_series?symbol={symbol}&interval={interval}&outputsize={outputsize}&apikey={Key}");
 
                 if (response.IsSuccessStatusCode)
                 {
