@@ -19,9 +19,9 @@ namespace Bronto.Wasm.Pwa.Service
             return await Task.FromResult<decimal>(rnd.Next(5000, 20000) / 100);
         }
 
-        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol)
+        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval, string outputsize)
         {
-            var response = await _httpClient.GetAsync($"api/TimeSeries?symbol={symbol}");
+            var response = await _httpClient.GetAsync($"api/TimeSeries?symbol={symbol}&interval={interval}&outputsize={outputsize}");
 
             if (response.IsSuccessStatusCode)
             {
