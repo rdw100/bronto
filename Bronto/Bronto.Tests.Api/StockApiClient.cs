@@ -73,12 +73,14 @@ namespace Bronto.Tests.Api
             }
         }
         
-        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min")
+        public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval = "1min", string outputsize = "30")
         {
             try
             {
-                string endpoint = "https://api.twelvedata.com/time_series?symbol=" + symbol + "&interval=" + interval +
-                                  "&apikey=" + _apiKey;
+                string endpoint = "https://api.twelvedata.com/time_series?symbol=" + symbol 
+                    + "&interval=" + interval
+                    + "&outputsize=" + outputsize
+                    + "&apikey=" + _apiKey;
 
                 var response = await _client.GetAsync(endpoint);
                 string responseString = await response.Content.ReadAsStringAsync();
