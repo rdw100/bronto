@@ -77,7 +77,8 @@ namespace Bronto.Tests.Api
         {
             try
             {
-                string endpoint = "https://api.twelvedata.com/time_series?symbol=" + symbol 
+                string endpoint = "https://api.twelvedata.com/time_series?"
+                    + "symbol=" + symbol 
                     + "&interval=" + interval
                     + "&outputsize=" + outputsize
                     + "&apikey=" + _apiKey;
