@@ -1,9 +1,10 @@
 ﻿using Bronto.Models.Api;
+using Bronto.Wasm.Pwa.Interfaces;
 using System.Net.Http.Json;
 
 namespace Bronto.Wasm.Pwa.Service
 {
-    public class StockService
+    public class StockService : IStockService
     {
         private readonly HttpClient _httpClient;
         private StockDataTimeSeries stockDataList;

@@ -1,9 +1,10 @@
 ﻿@page "/stockticker"
 @using System.Threading.Tasks
 @using Bronto.Models.Api
+@using Bronto.Wasm.Pwa.Interfaces
 @using Bronto.Wasm.Pwa.Models
 @using Bronto.Wasm.Pwa.Service
-@inject StockService stockService
+@inject IStockService stockService
 <h2>OHLC Stock Data</h2>
 
 @if (StockDataList != null)
@@ -43,7 +44,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL", "1min", "30");
         ohlcList = StockDataList.Values.ToList();
     }
 }
