@@ -1,14 +1,30 @@
 ﻿@page "/bollinger"
 @using AutoMapper
 @using Bronto.Models.Api
+@using Bronto.Wasm.Pwa.Interfaces
 @using Bronto.Wasm.Pwa.Service
 @using ScottPlot
 @using ScottPlot.Blazor
-@inject StockService stockService
+@inject IStockService stockService
 
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
 <h3>Bollinger Bands</h3>
+
+@if (prices is null)
+{
+    <p>Loading...</p>
+}
+else if (!prices.Any())
+{
+    <p>Error loading data</p>
+}
+else
+{
+    <p>Symbol: @StockDataList.Symbol</p>
+    <p>Interval: @StockDataList.Interval</p>
+    <p>Updated: @StockDataList.Values[0].Datetime</p>
+}
 
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
@@ -17,7 +33,7 @@
     private List<OHLC> prices { get; set; } = new();
     BlazorPlot BlazorPlot { get; set; } = new();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
         // get and plot time series price data
         prices = await GetStocks();
@@ -45,11 +61,12 @@
         sp3.LinePattern = LinePattern.Dotted;
 
         BlazorPlot.Refresh();
+        await base.OnInitializedAsync();
     }
 
     protected async Task<List<OHLC>> GetStocks()
     {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL","1day","100");
 
         @if (StockDataList != null)
         {

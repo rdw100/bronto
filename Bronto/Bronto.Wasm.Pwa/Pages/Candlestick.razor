@@ -1,10 +1,11 @@
 ﻿@page "/candlestick"
 @using AutoMapper
 @using Bronto.Models.Api
+@using Bronto.Wasm.Pwa.Interfaces
 @using Bronto.Wasm.Pwa.Service
 @using ScottPlot
 @using ScottPlot.Blazor
-@inject StockService stockService
+@inject IStockService stockService
 
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
@@ -31,7 +32,7 @@
 
     protected async Task<List<OHLC>> GetStocks()
     {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL");
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL","1day", "30");
         
         @if (StockDataList != null)
         {
