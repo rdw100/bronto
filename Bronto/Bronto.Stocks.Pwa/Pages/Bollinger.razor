@@ -1,0 +1,80 @@
+﻿@page "/bollinger"
+@using AutoMapper
+@using Bronto.Models.Api
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
+@using ScottPlot
+@using ScottPlot.Blazor
+@inject IStockService stockService
+
+<h1>ScottPlot 5 in Blazor</h1>
+<h2>Financial Plot</h2>
+<h3>Bollinger Bands</h3>
+
+@if (prices is null)
+{
+    <p>Loading...</p>
+}
+else if (!prices.Any())
+{
+    <p>Error loading data</p>
+}
+else
+{
+    <p>Symbol: @StockDataList.Symbol</p>
+    <p>Interval: @StockDataList.Interval</p>
+    <p>Updated: @StockDataList.Values[0].Datetime</p>
+}
+
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+
+@code {
+    private StockDataTimeSeries StockDataList { get; set; }
+    private List<OHLC> prices { get; set; } = new();
+    BlazorPlot BlazorPlot { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // get and plot time series price data
+        prices = await GetStocks();
+        BlazorPlot.Plot.Add.Candlestick(prices);
+        BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+
+        // calculate Bollinger Bands
+        ScottPlot.Finance.BollingerBands bb = new(prices, 20);
+
+        // display center line (mean) as a solid line
+        var sp1 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.Means);
+        sp1.MarkerSize = 0;
+        sp1.Color = Colors.Navy;
+
+        // display upper bands (positive variance) as a dashed line
+        var sp2 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.UpperValues);
+        sp2.MarkerSize = 0;
+        sp2.Color = Colors.Navy;
+        sp2.LinePattern = LinePattern.Dotted;
+
+        // display lower bands (positive variance) as a dashed line
+        var sp3 = BlazorPlot.Plot.Add.Scatter(bb.Dates, bb.LowerValues);
+        sp3.MarkerSize = 0;
+        sp3.Color = Colors.Navy;
+        sp3.LinePattern = LinePattern.Dotted;
+
+        BlazorPlot.Refresh();
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task<List<OHLC>> GetStocks()
+    {
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL","1day","100");
+
+        @if (StockDataList != null)
+        {
+            // Use AutoMapper mapping ScottPlot's OHLC
+            var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
+            var mapper = config.CreateMapper();
+            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
+        }
+        return prices;
+    }
+}

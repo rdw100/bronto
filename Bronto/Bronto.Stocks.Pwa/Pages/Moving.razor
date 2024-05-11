@@ -1,0 +1,56 @@
+﻿@page "/moving"
+@using AutoMapper
+@using Bronto.Models.Api
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
+@using ScottPlot
+@using ScottPlot.Blazor
+@inject IStockService stockService
+
+<h1>ScottPlot 5 in Blazor</h1>
+<h2>Financial Plot</h2>
+<h3>Simple Moving Average</h3>
+
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+
+@code {
+    private StockDataTimeSeries StockDataList { get; set; }
+    private List<OHLC> prices { get; set; } = new();
+    BlazorPlot BlazorPlot { get; set; } = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {        
+        prices = await GetStocks();
+        BlazorPlot.Plot.Add.Candlestick(prices);
+        BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+
+        // calculate SMA and display it as a scatter plot
+        int[] windowSizes = { 3, 8, 20 };
+        foreach (int windowSize in windowSizes)
+        {
+            ScottPlot.Finance.SimpleMovingAverage sma = new(prices, windowSize);
+            var sp = BlazorPlot.Plot.Add.Scatter(sma.Dates, sma.Means);
+            sp.Label = $"SMA {windowSize}";
+            sp.MarkerSize = 0;
+            sp.LineWidth = 3;
+            sp.Color = Colors.Navy.WithAlpha(1 - windowSize / 30.0);
+        }
+
+        BlazorPlot.Plot.ShowLegend();
+        BlazorPlot.Refresh();
+    }
+
+    protected async Task<List<OHLC>> GetStocks()
+    {
+        StockDataList = await stockService.GetTimeSeriesAsync("AAPL", "1day", "75");
+
+        @if (StockDataList != null)
+        {
+            // Use AutoMapper mapping ScottPlot's OHLC
+            var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
+            var mapper = config.CreateMapper();
+            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
+        }
+        return prices;
+    }
+}
