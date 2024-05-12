@@ -11,9 +11,11 @@
 <h2>Financial Plot</h2>
 <h3>OHLC Chart</h3>
 
+<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 <BlazorPlot @ref=BlazorPlot Style="width: 600px; height: 500px;"/>
 
 @code {
+    public DesignThemeModes Mode { get; set; }
     private StockDataTimeSeries StockDataList;
     private List<OHLC> prices { get; set; } = new();
     BlazorPlot BlazorPlot { get; set; } = new();
@@ -28,6 +30,22 @@
         BlazorPlot.Plot.YLabel("Price");
         BlazorPlot.Plot.Title("OHLC");
         BlazorPlot.Refresh();
+
+        if (Mode == DesignThemeModes.Dark)
+        {
+            // change figure colors
+            BlazorPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#181818");
+            BlazorPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#1f1f1f");
+
+            // change axis and grid colors
+            BlazorPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#d7d7d7"));
+            BlazorPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#404040");
+
+            // change legend colors
+            BlazorPlot.Plot.Legend.BackgroundColor = ScottPlot.Color.FromHex("#404040");
+            BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
+            BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
+        };
     }
 
     protected async Task<List<OHLC>> GetStocks()
