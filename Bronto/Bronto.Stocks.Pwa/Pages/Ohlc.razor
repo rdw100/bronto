@@ -11,18 +11,49 @@
 <h2>Financial Plot</h2>
 <h3>OHLC Chart</h3>
 
+@if (StockDataList is null)
+{
+    <p>Populating ...</p>
+}
+else if (!StockDataList.Values.Any())
+{
+    <p>Loading ...</p>
+}
+else if (loadFailed)
+{
+    <p>Failed to load data.</p>
+}
+else
+{
+    <p>Symbol: @StockDataList.Symbol</p>
+    <p>Interval: @StockDataList.Interval</p>
+    <p>Updated: @StockDataList.Values[0].Datetime</p>
+}
+
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
-<BlazorPlot @ref=BlazorPlot Style="width: 600px; height: 500px;"/>
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;"/>
 
 @code {
+    private bool loadFailed;
     public DesignThemeModes Mode { get; set; }
     private StockDataTimeSeries StockDataList;
-    private List<OHLC> prices { get; set; } = new();
+    private List<OHLC> prices { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        prices = await GetStocks();
+        // get and plot time series price data
+        try
+        {
+            loadFailed = false;
+            prices = null;
+            prices = await GetStocks();
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+            Console.WriteLine(ex.Message);
+        }
 
         BlazorPlot.Plot.Add.OHLC(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();

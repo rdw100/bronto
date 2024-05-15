@@ -11,13 +11,17 @@
 <h2>Financial Plot</h2>
 <h3>Bollinger Bands</h3>
 
-@if (prices is null)
+@if (StockDataList is null)
 {
-    <p>Loading...</p>
+    <p>Populating ...</p>
 }
-else if (!prices.Any())
+else if (!StockDataList.Values.Any())
 {
-    <p>Error loading data</p>
+    <p>Loading ...</p>
+}
+else if (loadFailed)
+{
+    <p>Failed to load data.</p>
 }
 else
 {
@@ -29,14 +33,26 @@ else
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
 @code {
+    private bool loadFailed;
     private StockDataTimeSeries StockDataList { get; set; }
-    private List<OHLC> prices { get; set; } = new();
+    private List<OHLC> prices { get; set; } 
     BlazorPlot BlazorPlot { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         // get and plot time series price data
-        prices = await GetStocks();
+        try
+        {
+            loadFailed = false;
+            prices = null;
+            prices = await GetStocks();
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+            Console.WriteLine(ex.Message);
+        }        
+
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
 
