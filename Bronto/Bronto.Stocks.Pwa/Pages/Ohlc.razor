@@ -14,14 +14,20 @@
 @if (StockDataList is null)
 {
     <p>Populating ...</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else if (!StockDataList.Values.Any())
 {
     <p>Loading ...</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else if (loadFailed)
 {
     <p>Failed to load data.</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else
 {
@@ -31,13 +37,14 @@ else
 }
 
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
+
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;"/>
 
 @code {
     private bool loadFailed;
-    public DesignThemeModes Mode { get; set; }
     private StockDataTimeSeries StockDataList;
     private List<OHLC> prices { get; set; }
+    public DesignThemeModes Mode { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
@@ -60,7 +67,6 @@ else
         BlazorPlot.Plot.XLabel("Time");
         BlazorPlot.Plot.YLabel("Price");
         BlazorPlot.Plot.Title("OHLC");
-        BlazorPlot.Refresh();
 
         if (Mode == DesignThemeModes.Dark)
         {
@@ -77,6 +83,9 @@ else
             BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
             BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
         };
+
+        BlazorPlot.Refresh();
+        await base.OnInitializedAsync();
     }
 
     protected async Task<List<OHLC>> GetStocks()

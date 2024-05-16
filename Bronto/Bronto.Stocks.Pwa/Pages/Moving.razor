@@ -14,14 +14,20 @@
 @if (StockDataList is null)
 {
     <p>Populating ...</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else if (!StockDataList.Values.Any())
 {
     <p>Loading ...</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else if (loadFailed)
 {
     <p>Failed to load data.</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 }
 else
 {
@@ -29,12 +35,16 @@ else
     <p>Interval: @StockDataList.Interval</p>
     <p>Updated: @StockDataList.Values[0].Datetime</p>
 }
+
+<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
+
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
 @code {
     private bool loadFailed;
     private StockDataTimeSeries StockDataList { get; set; }
     private List<OHLC> prices { get; set; }
+    public DesignThemeModes Mode { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
@@ -68,6 +78,23 @@ else
         }
 
         BlazorPlot.Plot.ShowLegend();
+
+        if (Mode == DesignThemeModes.Dark)
+        {
+            // change figure colors
+            BlazorPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#181818");
+            BlazorPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#1f1f1f");
+
+            // change axis and grid colors
+            BlazorPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#d7d7d7"));
+            BlazorPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#404040");
+
+            // change legend colors
+            BlazorPlot.Plot.Legend.BackgroundColor = ScottPlot.Color.FromHex("#404040");
+            BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
+            BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
+        };
+
         BlazorPlot.Refresh();
         await base.OnInitializedAsync();
     }
