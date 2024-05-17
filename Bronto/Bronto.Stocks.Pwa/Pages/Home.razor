@@ -4,6 +4,215 @@
 
 <h1>Financial Plot!</h1>
 
-Welcome to your new Fluent Blazor Financial Plot app.
+<p>Welcome to your new Fluent Blazor Financial Plot app.</p>
 
-Finance plots display price data binned into time ranges.
+<p>Finance plots display price data binned into time ranges.</p>
+
+@using System.Timers;
+
+<FluentSearch @ref=searchTest
+              @bind-Value="SearchValue"
+              @bind-Value:after="HandleClear"
+              @oninput="@(e => SearchValue = e.Value?.ToString())"
+              Placeholder="Search for Stock" />
+<br />
+<FluentListbox aria-label="search results" Items=@searchResults TOption="string" SelectedOptionChanged="@(e => SearchValue = (e != defaultResultsText ? e : string.Empty))" />
+<p>
+    You searched for: @SearchValue
+</p>
+
+@code {
+    private Timer? timer = null;
+
+    private FluentSearch? searchTest;
+
+    private string? searchValue = string.Empty;
+
+    private string? SearchValue
+    {
+        get => searchValue;
+        set
+        {
+            if (value != searchValue)
+            {
+                searchValue = value;
+                DisposeTimer();
+                //ShowMessageBar the debounce time in ms to the timer below
+                timer = new Timer(400);
+                timer.Elapsed += TimerElapsed_TickAsync;
+                timer.Enabled = true;
+                timer.Start();
+            }
+        }
+    }
+
+    private List<string> searchResults = defaultResults();
+
+    private static string defaultResultsText = "No results";
+
+    private static List<string> defaultResults()
+    {
+        return new() { defaultResultsText };
+    }
+
+    private async void TimerElapsed_TickAsync(object? sender, EventArgs e)
+    {
+        DisposeTimer();
+        await InvokeAsync(OnSearch);
+    }
+
+    private void DisposeTimer()
+    {
+        if (timer != null)
+        {
+            timer.Enabled = false;
+            timer.Elapsed -= TimerElapsed_TickAsync;
+            timer.Dispose();
+            timer = null;
+        }
+    }
+
+    private void OnSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchValue))
+        {
+            string searchTerm = SearchValue.ToLower();
+
+            //You can also call an API here if the list is not local
+            List<string> temp = searchData.Where(str => str.ToLower().Contains(searchTerm)).Select(str => str).ToList();
+            if (temp.Count() > 0)
+            {
+                searchResults = temp;
+            }
+            else
+            {
+                searchResults = defaultResults();
+            }
+            StateHasChanged();
+        }
+        else
+        {
+            searchResults = defaultResults();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleClear()
+    {
+        if (string.IsNullOrWhiteSpace(SearchValue))
+            return;
+
+        DisposeTimer();
+        searchResults = defaultResults();
+        SearchValue = string.Empty;
+        StateHasChanged();
+    }
+
+    //This component is made for a lot of data. You can copy and paste a list with 6000 entries here https://sharetext.me/vfknowohwl"
+    private List<string> searchData = new()
+    {
+        "AAPL", 
+        "AMZN", 
+        "MSFT", 
+        "GOOGL", 
+        "FB", 
+        "TSLA", 
+        "NVDA", 
+        "PYPL", 
+        "NFLX", 
+        "ADBE", 
+        "INTC", 
+        "CSCO", 
+        "CRM", 
+        "ZM", 
+        "AMD", 
+        "DOCU", 
+        "SQ", 
+        "PTON", 
+        "MRNA", 
+        "SHOP", 
+        "TWLO", 
+        "RBLX", 
+        "SNOW", 
+        "U", 
+        "ZS", 
+        "OKTA", 
+        "CRWD", 
+        "TEAM", 
+        "SE", 
+        "MELI", 
+        "PINS", 
+        "AAPL", 
+        "AMZN", 
+        "MSFT", 
+        "GOOGL", 
+        "FB", 
+        "TSLA", 
+        "NVDA", 
+        "PYPL", 
+        "NFLX", 
+        "ADBE", 
+        "INTC", 
+        "CSCO", 
+        "CRM", 
+        "ZM", 
+        "AMD", 
+        "DOCU", 
+        "SQ", 
+        "PTON", 
+        "MRNA", 
+        "SHOP", 
+        "TWLO", 
+        "RBLX", 
+        "SNOW", 
+        "U", 
+        "ZS", 
+        "OKTA", 
+        "CRWD", 
+        "TEAM", 
+        "SE", 
+        "MELI", 
+        "PINS", 
+        "AAPL", 
+        "AMZN", 
+        "MSFT", 
+        "GOOGL", 
+        "FB", 
+        "TSLA", 
+        "NVDA", 
+        "PYPL", 
+        "NFLX", 
+        "ADBE", 
+        "INTC", 
+        "CSCO", 
+        "CRM", 
+        "ZM", 
+        "AMD", 
+        "DOCU", 
+        "SQ", 
+        "PTON", 
+        "MRNA", 
+        "SHOP", 
+        "TWLO", 
+        "RBLX", 
+        "SNOW", 
+        "U", 
+        "ZS", 
+        "OKTA", 
+        "CRWD", 
+        "TEAM", 
+        "SE", 
+        "MELI", 
+        "PINS", 
+        "AAPL", 
+        "AMZN", 
+        "MSFT", 
+        "GOOGL", 
+        "FB", 
+        "TSLA", 
+        "NVDA", 
+        "PYPL", 
+        "NFLX", 
+        "ADBE"
+    };
+}
