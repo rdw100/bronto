@@ -1,0 +1,63 @@
+﻿@page "/portfolio"
+@using Bronto.Models
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
+@inject IToastService ToastService
+
+<h3>My Stock Portfolio</h3>
+<div>
+    <input type="text" @bind="@stockSymbol" placeholder="Enter stock symbol" />
+    <button @onclick="AddStock">Add Stock</button>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Symbol</th>
+        </tr>
+    </thead>
+    <tbody>        
+        @foreach (var stock in PortfolioService.Stocks)
+        {
+            <tr>
+                <td>@stock.Symbol</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private string stockSymbol = string.Empty;
+    [Inject] private IStockPortfolioService PortfolioService { get; set; }
+
+    private void AddStock()
+    {
+        // Validate input (e.g., check if stockSymbol is not empty)
+        if (!string.IsNullOrWhiteSpace(stockSymbol))
+        {
+            // Create a new stock with the entered symbol (you can customize this further)
+            var newStock = new Stock
+                {
+                    Symbol = stockSymbol
+                };
+
+            // Add the stock to the portfolio
+            PortfolioService.AddStock(newStock);
+            ShowToast(newStock.Symbol);
+        }
+        else
+        {
+            // Handle invalid input (e.g., show an error message)
+            // You can add your own logic here
+        }
+    }
+
+    int counter = 1;
+    void ShowToast(string symbol)
+    {
+        Random rnd = new();
+
+        var intent = Enum.GetValues<ToastIntent>()[rnd.Next(10)];
+        var message = $"Added Stock {symbol} #{counter++}";
+        ToastService.ShowToast(ToastIntent.Success, message);
+    }
+}
