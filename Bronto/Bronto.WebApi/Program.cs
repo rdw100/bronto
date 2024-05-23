@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using System.Globalization;
 using System.Threading.RateLimiting;
 
@@ -10,28 +11,29 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddRateLimiter(limiterOptions =>
+builder.Services.AddRateLimiter(_ =>
 {
-    limiterOptions.OnRejected = (httpContext, _) =>
+    _.OnRejected = (context, _) =>
     {
-        if (httpContext.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
-            httpContext.HttpContext.Response.Headers.RetryAfter =
+            context.HttpContext.Response.Headers.RetryAfter =
                 ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
         }
 
-        httpContext.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        httpContext.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
 
         return new ValueTask();
     };
-
-    limiterOptions.GlobalLimiter = PartitionedRateLimiter.CreateChained(
+    _.GlobalLimiter = PartitionedRateLimiter.CreateChained(
         PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         {
             var userAgent = httpContext.Request.Headers.UserAgent.ToString();
-            return RateLimitPartition.GetFixedWindowLimiter(
-                userAgent, _ => new FixedWindowRateLimiterOptions
+
+            return RateLimitPartition.GetFixedWindowLimiter
+            (userAgent, _ =>
+                new FixedWindowRateLimiterOptions
                 {
                     AutoReplenishment = true,
                     PermitLimit = 2,
@@ -41,8 +43,10 @@ builder.Services.AddRateLimiter(limiterOptions =>
         PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         {
             var clientIP = httpContext.Connection.RemoteIpAddress!.ToString();
-            return RateLimitPartition.GetFixedWindowLimiter(
-                clientIP, _ => new FixedWindowRateLimiterOptions
+
+            return RateLimitPartition.GetFixedWindowLimiter
+            (clientIP, _ =>
+                new FixedWindowRateLimiterOptions
                 {
                     AutoReplenishment = true,
                     PermitLimit = 100,
@@ -53,10 +57,13 @@ builder.Services.AddRateLimiter(limiterOptions =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
-    {
+    options.AddPolicy("MyAllowSpecificOrigins",
+    policy => {
         policy
-            .WithOrigins("https://localhost:7228", "https://localhost:7247");
+            .WithOrigins("https://localhost:7228", "https://localhost:7247")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            ;
     });
 });
 
@@ -77,6 +84,6 @@ app.MapControllers();
 
 app.UseRateLimiter();
 
-app.UseCors();
+app.UseCors("MyAllowSpecificOrigins");
 
 app.Run();
