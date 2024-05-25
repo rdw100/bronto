@@ -1,4 +1,8 @@
 ﻿@page "/"
+@using Bronto.Models.Api
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
+@inject IPriceService priceService
 
 <PageTitle>Home</PageTitle>
 
@@ -21,7 +25,25 @@
     You searched for: @SearchValue
 </p>
 
+<h3>Stock Price</h3>
+
+<input @bind="symbol" placeholder="Enter stock symbol" />
+<button @onclick="()=>GetStockPrice(symbol)">Get Stock Price</button>
+
+@if (errorMessage != null)
+{
+    <p style="color: red;">@errorMessage</p>
+}
+else if (stockPrice != null)
+{
+    <p>Stock: @symbol</p>
+    <p>Price: @stockPrice.Price</p>
+}
+
 @code {
+    private string symbol;
+    private RealTimePrice stockPrice;
+    private string errorMessage;
     private Timer? timer = null;
 
     private FluentSearch? searchTest;
@@ -141,78 +163,19 @@
         "TEAM", 
         "SE", 
         "MELI", 
-        "PINS", 
-        "AAPL", 
-        "AMZN", 
-        "MSFT", 
-        "GOOGL", 
-        "FB", 
-        "TSLA", 
-        "NVDA", 
-        "PYPL", 
-        "NFLX", 
-        "ADBE", 
-        "INTC", 
-        "CSCO", 
-        "CRM", 
-        "ZM", 
-        "AMD", 
-        "DOCU", 
-        "SQ", 
-        "PTON", 
-        "MRNA", 
-        "SHOP", 
-        "TWLO", 
-        "RBLX", 
-        "SNOW", 
-        "U", 
-        "ZS", 
-        "OKTA", 
-        "CRWD", 
-        "TEAM", 
-        "SE", 
-        "MELI", 
-        "PINS", 
-        "AAPL", 
-        "AMZN", 
-        "MSFT", 
-        "GOOGL", 
-        "FB", 
-        "TSLA", 
-        "NVDA", 
-        "PYPL", 
-        "NFLX", 
-        "ADBE", 
-        "INTC", 
-        "CSCO", 
-        "CRM", 
-        "ZM", 
-        "AMD", 
-        "DOCU", 
-        "SQ", 
-        "PTON", 
-        "MRNA", 
-        "SHOP", 
-        "TWLO", 
-        "RBLX", 
-        "SNOW", 
-        "U", 
-        "ZS", 
-        "OKTA", 
-        "CRWD", 
-        "TEAM", 
-        "SE", 
-        "MELI", 
-        "PINS", 
-        "AAPL", 
-        "AMZN", 
-        "MSFT", 
-        "GOOGL", 
-        "FB", 
-        "TSLA", 
-        "NVDA", 
-        "PYPL", 
-        "NFLX", 
-        "ADBE"
+        "PINS"
     };
+
+    private async Task GetStockPrice(string symbol)
+    {
+        try
+        {
+            errorMessage = null; // Clear any previous error message
+            stockPrice = await priceService.GetPriceAsync(symbol);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
 }

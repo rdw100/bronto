@@ -13,7 +13,6 @@ namespace Bronto.WebApi.Controllers
 
         protected internal string Key { get; set; }
         protected internal string Host { get; set; }
-        protected internal string uriString { get; set; }
 
         public PriceController(IConfiguration iConfig)
         {
