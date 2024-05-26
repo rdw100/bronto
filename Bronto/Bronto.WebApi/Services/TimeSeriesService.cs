@@ -1,5 +1,4 @@
 ﻿using Bronto.Models.Api;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace Bronto.WebApi.Services
@@ -11,7 +10,6 @@ namespace Bronto.WebApi.Services
 
         protected internal string Key { get; set; }
         protected internal string Host { get; set; }
-        protected internal string uriString { get; set; }
 
         public TimeSeriesService(IConfiguration iConfig)
         {
