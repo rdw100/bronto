@@ -20,10 +20,25 @@
               @oninput="@(e => SearchValue = e.Value?.ToString())"
               Placeholder="Search for Stock" />
 <br />
-<FluentListbox aria-label="search results" Items=@searchResults TOption="string" SelectedOptionChanged="@(e => SearchValue = (e != defaultResultsText ? e : string.Empty))" />
+<FluentListbox aria-label="search results"
+               Items=@searchResults
+               TOption="string"
+               SelectedOptionChanged="@(e => SearchValue = (e != defaultResultsText ? e : string.Empty))"
+               ValueChanged="@(e => ListboxValue = e)" />
 <p>
     You searched for: @SearchValue
 </p>
+
+<h3>Portfolio</h3>
+
+<p>
+    Selected value: @ListboxValue
+</p>
+
+@foreach (var item in portfolioResults)
+{
+    <p>@item</p>
+}
 
 <h3>Stock Price</h3>
 
@@ -45,7 +60,16 @@ else if (stockPrice != null)
     private RealTimePrice stockPrice;
     private string errorMessage;
     private Timer? timer = null;
-
+    private string? _listboxValue;
+    public string? ListboxValue
+    {
+        get => _listboxValue;
+        set
+        {
+            _listboxValue = value;
+            portfolioResults.Add(_listboxValue);
+        }
+    }
     private FluentSearch? searchTest;
 
     private string? searchValue = string.Empty;
@@ -69,6 +93,8 @@ else if (stockPrice != null)
     }
 
     private List<string> searchResults = defaultResults();
+
+    private List<string> portfolioResults = new();
 
     private static string defaultResultsText = "No results";
 
@@ -129,6 +155,8 @@ else if (stockPrice != null)
         SearchValue = string.Empty;
         StateHasChanged();
     }
+
+    private string _selectedValue = string.Empty;
 
     //This component is made for a lot of data. You can copy and paste a list with 6000 entries here https://sharetext.me/vfknowohwl"
     private List<string> searchData = new()
