@@ -25,6 +25,7 @@
                TOption="string"
                SelectedOptionChanged="@(e => SearchValue = (e != defaultResultsText ? e : string.Empty))"
                ValueChanged="@(e => ListboxValue = e)" />
+
 <p>
     You searched for: @SearchValue
 </p>
@@ -43,6 +44,7 @@
 <h3>Stock Price</h3>
 
 <input @bind="symbol" placeholder="Enter stock symbol" />
+
 <button @onclick="()=>GetStockPrice(symbol)">Get Stock Price</button>
 
 @if (errorMessage != null)

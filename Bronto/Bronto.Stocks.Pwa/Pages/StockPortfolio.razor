@@ -8,6 +8,7 @@
 <div>
     <input type="text" @bind="@stockSymbol" placeholder="Enter stock symbol" />
     <button @onclick="AddStock">Add Stock</button>
+    <button @onclick="RemoveStock">Remove Stock</button>
 </div>
 <table>
     <thead>
@@ -27,6 +28,7 @@
 
 @code {
     private string stockSymbol = string.Empty;
+    private int counter = 1;
     [Inject] private IStockPortfolioService PortfolioService { get; set; }
 
     private void AddStock()
@@ -42,22 +44,52 @@
 
             // Add the stock to the portfolio
             PortfolioService.AddStock(newStock);
-            ShowToast(newStock.Symbol);
+            ShowToast("Added", newStock.Symbol, ToastIntent.Success);
         }
         else
         {
-            // Handle invalid input (e.g., show an error message)
-            // You can add your own logic here
+            ShowToast("Invalid", "is blank.", ToastIntent.Error);
         }
     }
 
-    int counter = 1;
-    void ShowToast(string symbol)
+    private void RemoveStock()
+    {
+        if (!string.IsNullOrWhiteSpace(stockSymbol))
+        {
+            // Remove an existing stock with the entered symbol (you can customize this further)
+            var oldStock = new Stock
+                {
+                    Symbol = stockSymbol
+                };
+
+            // Add the stock to the portfolio
+            PortfolioService.RemoveStock(stockSymbol);
+            ShowToast("Removed", oldStock.Symbol, ToastIntent.Success);
+        }
+        else
+        {
+            ShowToast("Invalid", "is blank.", ToastIntent.Error);
+        }
+    }
+
+    private void StockExists(string symbol)
+    {
+        var exists = PortfolioService.StockExists(symbol);
+        if (exists)
+        {
+            Console.WriteLine("Stock exists.");
+        }
+        else
+        {
+            Console.WriteLine("Stock does not exist.");
+        }
+    }
+
+    void ShowToast(string action, string symbol, ToastIntent intent)
     {
         Random rnd = new();
 
-        var intent = Enum.GetValues<ToastIntent>()[rnd.Next(10)];
-        var message = $"Added Stock {symbol} #{counter++}";
-        ToastService.ShowToast(ToastIntent.Success, message);
+        var message = $"{action} Stock {symbol} #{counter++}";
+        ToastService.ShowToast(intent, message);
     }
 }

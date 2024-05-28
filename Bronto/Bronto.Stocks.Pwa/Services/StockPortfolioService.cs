@@ -22,7 +22,12 @@ namespace Bronto.Stocks.Pwa.Services
                 _stocks.Remove(stockToRemove);
             }
         }
-        
+
+        public bool StockExists(string symbol)
+        {
+            return _stocks.Exists(s => s.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
+        }
+
         public void ClearPortfolio()
         {
             _stocks.Clear();

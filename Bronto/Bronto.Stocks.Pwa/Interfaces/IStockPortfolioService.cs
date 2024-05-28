@@ -10,6 +10,8 @@ namespace Bronto.Stocks.Pwa.Interfaces
 
         void RemoveStock(string stockSymbol);
 
+        bool StockExists(string stockSymbol);
+
         void ClearPortfolio();
     }
 }
