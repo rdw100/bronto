@@ -14,9 +14,9 @@ namespace Bronto.Stocks.Pwa.Services
             _stocks.Add(stock);
         }
 
-        public void RemoveStock(string stockSymbol)
+        public void RemoveStock(Stock stock)
         {
-            var stockToRemove = _stocks.FirstOrDefault(s => s.Symbol == stockSymbol);
+            var stockToRemove = _stocks.FirstOrDefault(s => s.Symbol == stock.Symbol);
             if (stockToRemove != null)
             {
                 _stocks.Remove(stockToRemove);

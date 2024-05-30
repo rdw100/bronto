@@ -8,7 +8,7 @@ namespace Bronto.Stocks.Pwa.Interfaces
 
         void AddStock(Stock stock);
 
-        void RemoveStock(string stockSymbol);
+        void RemoveStock(Stock stock);
 
         bool StockExists(string stockSymbol);
 
