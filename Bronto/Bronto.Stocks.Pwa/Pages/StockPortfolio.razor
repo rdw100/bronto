@@ -1,8 +1,10 @@
 ﻿@page "/portfolio"
 @using Bronto.Models
+@using Bronto.Models.Api
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
 @inject IToastService ToastService
+@inject IPriceService priceService
 
 <h3>Search</h3>
 
@@ -49,12 +51,25 @@
             <th>Symbol</th>
         </tr>
     </thead>
-    <tbody>        
-        @foreach (var stock in PortfolioService.Stocks)
+    <tbody>
+        @if (errorMessage != null)
         {
-            <tr>
-                <td>@stock.Symbol</td>
-            </tr>
+            <span style="color: red;">@errorMessage</span>
+        }
+        else if (errorMessage == null)
+        {
+            @foreach (var stock in PortfolioService.Stocks)
+            {
+                <tr>
+                    <td>@stock.Symbol</td>
+                    <td>
+                        @stock.Price
+                    </td>
+                    <td>
+                        <button @onclick="()=>GetStockPrice(stock.Symbol)">Get Stock Price</button>
+                    </td>
+                </tr>
+            }            
         }
     </tbody>
 </table>
@@ -62,7 +77,7 @@
 @code {
 
     IEnumerable<String> SelectedItems = Array.Empty<String>();
-    
+
     private async Task OnSearchAsync(OptionsSearchEventArgs<String> e)
     {
         e.Items = stockData.Where((i => i.StartsWith(e.Text, StringComparison.OrdinalIgnoreCase)))
@@ -74,6 +89,7 @@
         "AAPL", "ABNB", "ABMD", "ACGL", "ADBE", "ADI", "ADP", "ADSK", "AEP", "ALGN", "ALXN", "AMAT", "AMGN", "AMZN", "ANSS", "ASML", "ATVI", "AVGO", "BIDU", "BIIB", "BKNG", "BMRN", "CDNS", "CDW", "CERN", "CHKP", "CHTR", "CMCSA", "COST", "CPRT", "CSCO", "CSGP", "CSX", "CTAS", "CTSH", "CTXS", "DOCU", "DXCM", "EA", "EBAY", "EXC", "FAST", "FB", "FISV", "FOX", "FOXA", "GILD", "GOOG", "GOOGL", "IDXX", "ILMN", "INCY", "INTC", "INTU", "ISRG", "JD", "KHC", "KLAC", "LRCX", "LULU", "LUMN", "MAR", "MCHP", "MDLZ", "MELI", "MNST", "MRNA", "MRVL", "MSFT", "MU", "MXIM", "NFLX", "NTES", "NVDA", "NXPI", "OKTA", "ORLY", "PAYX", "PCAR", "PDD", "PEP", "PTON", "PYPL", "QCOM", "REGN", "ROST", "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TCOM", "TEAM", "TSLA", "TXN", "VRSK", "VRSN", "VRTX", "WBA", "WDAY", "XEL", "XLNX", "ZM"
     };
 
+    private string errorMessage;
     private string stockSymbol = string.Empty;
     private int counter = 1;
     [Inject] private IStockPortfolioService PortfolioService { get; set; }
@@ -144,4 +160,19 @@
     {
         "AAPL", "ABNB", "ABMD", "ACGL", "ADBE", "ADI", "ADP", "ADSK", "AEP", "ALGN", "ALXN", "AMAT", "AMGN", "AMZN", "ANSS", "ASML", "ATVI", "AVGO", "BIDU", "BIIB", "BKNG", "BMRN", "CDNS", "CDW", "CERN", "CHKP", "CHTR", "CMCSA", "COST", "CPRT", "CSCO", "CSGP", "CSX", "CTAS", "CTSH", "CTXS", "DOCU", "DXCM", "EA", "EBAY", "EXC", "FAST", "FB", "FISV", "FOX", "FOXA", "GILD", "GOOG", "GOOGL", "IDXX", "ILMN", "INCY", "INTC", "INTU", "ISRG", "JD", "KHC", "KLAC", "LRCX", "LULU", "LUMN", "MAR", "MCHP", "MDLZ", "MELI", "MNST", "MRNA", "MRVL", "MSFT", "MU", "MXIM", "NFLX", "NTES", "NVDA", "NXPI", "OKTA", "ORLY", "PAYX", "PCAR", "PDD", "PEP", "PTON", "PYPL", "QCOM", "REGN", "ROST", "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TCOM", "TEAM", "TSLA", "TXN", "VRSK", "VRSN", "VRTX", "WBA", "WDAY", "XEL", "XLNX", "ZM"
     };
+
+    private async Task<RealTimePrice> GetStockPrice(string symbol)
+    {
+        RealTimePrice price = null;
+        try
+        {
+            errorMessage = null; // Clear any previous error message
+            price = await priceService.GetPriceAsync(symbol);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        return price;
+    }
 }
