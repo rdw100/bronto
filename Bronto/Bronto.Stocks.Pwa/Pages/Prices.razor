@@ -1,0 +1,41 @@
+﻿@page "/prices"
+
+<h3>Stock Prices</h3>
+
+@foreach (var symbol in StockSymbols)
+{
+    <div>
+        <span>@symbol</span>
+        <button @onclick="() => GetStockPrice(symbol)">Get Price</button>
+        <span>@GetFormattedPrice(symbol)</span>
+    </div>
+}
+
+@code {
+    private List<string> StockSymbols = new List<string>
+    {
+        "AAPL",
+        "MSFT",
+        "GOOGL"
+    };
+
+    private Dictionary<string, decimal> StockPrices = new Dictionary<string, decimal>();
+
+    private async Task GetStockPrice(string symbol)
+    {
+        // Call API to get stock price
+        // Example: var price = await StockApi.GetStockPriceAsync(symbol);
+        var price = 123.45m;
+
+        StockPrices[symbol] = price;
+    }
+
+    private string GetFormattedPrice(string symbol)
+    {
+        if (StockPrices.TryGetValue(symbol, out var price))
+        {
+            return $"${price:F2}";
+        }
+        return "N/A";
+    }
+}
