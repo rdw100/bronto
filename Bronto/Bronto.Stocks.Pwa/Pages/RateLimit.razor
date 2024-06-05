@@ -1,0 +1,52 @@
+﻿@page "/RateLimit"
+@using System.Net
+@inject HttpClient httpClient
+
+<h3>Rate Limit</h3>
+<h4>API Call Counter</h4>
+<p>Button pressed: <strong>@buttonPressCount</strong> times</p>
+
+<button @onclick="()=>GetStock()">Get Stock</button>
+
+@code {
+    private int buttonPressCount = 0;
+
+    private string apiResponse;
+
+    public async Task GetStock()
+    {
+        buttonPressCount++;
+
+        try
+        {
+            var response = await httpClient.GetAsync("https://localhost:7085/api/Price?symbol=AAPL", HttpCompletionOption.ResponseHeadersRead);
+
+            if (response.IsSuccessStatusCode)
+            {
+                apiResponse = await response.Content.ReadAsStringAsync();
+            }
+            else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                // Handle rate limit exceeded error
+                apiResponse = "Rate limit exceeded. Please wait a while before making more requests.";
+            }
+            else
+            {
+                // Handle other errors (e.g., 500 Internal Server Error)
+                apiResponse = "An error occurred. Please try again later.";
+            }            
+        }
+        catch (HttpRequestException ex)
+        {
+            apiResponse = $"HTTP Error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error calling API");
+            apiResponse = $"Error: {ex.Message}";
+        }
+    }
+}
+
+<h3>API Response:</h3>
+<p>@apiResponse</p>
