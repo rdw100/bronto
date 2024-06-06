@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.RateLimiting;
 using System.Globalization;
 using System.Threading.RateLimiting;
 
@@ -10,6 +9,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyAllowSpecificOrigins",
+    policy => {
+        policy
+            .WithOrigins("https://localhost:7228", "https://localhost:7247", "https://localhost:7270")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            ;
+    });
+});
 
 builder.Services.AddRateLimiter(_ =>
 {
@@ -55,18 +66,6 @@ builder.Services.AddRateLimiter(_ =>
         }));
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("MyAllowSpecificOrigins",
-    policy => {
-        policy
-            .WithOrigins("https://localhost:7228", "https://localhost:7247")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            ;
-    });
-});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -80,10 +79,10 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseCors("MyAllowSpecificOrigins");
 
 app.UseRateLimiter();
 
-app.UseCors("MyAllowSpecificOrigins");
+app.MapControllers();
 
 app.Run();
