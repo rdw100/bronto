@@ -62,7 +62,8 @@ namespace Bronto.Models.Api
         {
             Ok,
             StockDataError,
-            StockDataApiError
+            StockDataApiError,
+            RateLimitExceeded
         }
     }
 

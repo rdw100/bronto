@@ -52,27 +52,27 @@
         </tr>
     </thead>
     <tbody>
-        @if (errorMessage != null)
+        @foreach (var stock in PortfolioService.Stocks)
         {
-            <span style="color: red;">@errorMessage</span>
-        }
-        else if (errorMessage == null)
-        {
-            @foreach (var stock in PortfolioService.Stocks)
-            {
-                <tr>
-                    <td>@stock.Symbol</td>
-                    <td>
-                        <span>@GetFormattedPrice(@stock.Symbol)</span>
-                    </td>
-                    <td>
-                        <button @onclick="()=>GetStockPrice(stock.Symbol)">Get Stock Price</button>
-                    </td>
-                </tr>
-            }            
+            <tr>
+                <td>@stock.Symbol</td>
+                <td>
+                    <span>@GetFormattedPrice(@stock.Symbol)</span>
+                </td>
+                <td>
+                    <button @onclick="()=>GetStockPrice(stock.Symbol)">Get Stock Price</button>
+                </td>
+            </tr>
         }
     </tbody>
 </table>
+
+<p>
+    @if (errorMessage != null)
+    {
+        <span style="color: red;">@errorMessage</span>
+    }
+</p>
 
 @code {
 
@@ -158,6 +158,11 @@
         var price = await priceService.GetPriceAsync(symbol);
 
         StockPrices[symbol] = price.Price;
+
+        if (price.ResponseMessage != null)
+        {
+            errorMessage = price.ResponseMessage;
+        }
 
         ShowToast("Retrieved", symbol, ToastIntent.Download);
     }
