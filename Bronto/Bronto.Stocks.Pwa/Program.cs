@@ -17,7 +17,9 @@ builder.Services.AddHttpClient<IPriceService, PriceService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7085/");
 });
-builder.Services.AddSingleton<IStockPortfolioService, StockPortfolioService>();
+builder.Services.AddSingleton<IWatchlistService, WatchlistService>();
+builder.Services.AddSingleton<IPortfolioService, PortfolioService>();
+
 builder.Services.AddFluentUIComponents();
 
 await builder.Build().RunAsync();

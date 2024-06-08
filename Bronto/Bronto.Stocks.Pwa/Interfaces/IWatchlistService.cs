@@ -2,9 +2,11 @@
 
 namespace Bronto.Stocks.Pwa.Interfaces
 {
-    public interface IStockPortfolioService
+    public interface IWatchlistService
     {
         IReadOnlyList<Stock> Stocks { get; }
+
+        void AddStock(string stock);
 
         void AddStock(Stock stock);
 

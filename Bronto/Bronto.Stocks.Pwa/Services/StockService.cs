@@ -14,12 +14,6 @@ namespace Bronto.Stocks.Pwa.Services
             _httpClient = httpClient;
         }
 
-        public async Task<decimal> GetStockPriceAsync(string tickerSymbol)
-        {
-            Random rnd = new Random();
-            return await Task.FromResult<decimal>(rnd.Next(5000, 20000) / 100);
-        }
-
         public async Task<StockDataTimeSeries> GetTimeSeriesAsync(string symbol, string interval, string outputsize)
         {
             var response = await _httpClient.GetAsync($"api/TimeSeries?symbol={symbol}&interval={interval}&outputsize={outputsize}");
