@@ -1,9 +1,9 @@
-using FluentAssertions;
-using RichardSzalay.MockHttp;
-using Microsoft.Extensions.Configuration;
-using Bronto.Tests.Api.Models;
 using Bronto.Models.Api.Price.Response;
+using FluentAssertions;
+using Microsoft.Extensions.Configuration;
+using RichardSzalay.MockHttp;
 using System.Net;
+using static Bronto.Models.Api.Enums;
 
 namespace Bronto.Tests.Api
 {
@@ -96,7 +96,7 @@ namespace Bronto.Tests.Api
             Assert.NotNull(response);
             response.ResponseStatus
                 .Should()
-                .Be(Enums.StockDataClientResponseStatus.Ok, 
+                .Be(StockDataClientResponseStatus.Ok, 
                     $"Actual status code: { response.ResponseStatus }.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Price.Should().BeGreaterThan(0);
@@ -123,7 +123,7 @@ namespace Bronto.Tests.Api
             Assert.NotNull(response);
             response.ResponseStatus
                 .Should()
-                .Be(Enums.StockDataClientResponseStatus.Ok,
+                .Be(StockDataClientResponseStatus.Ok,
                     $"Actual status code: {response.ResponseStatus}.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Data.Symbol.Should().Be("AAPL");
@@ -149,7 +149,7 @@ namespace Bronto.Tests.Api
             Assert.NotNull(response);
             response.ResponseStatus
                 .Should()
-                .Be(Enums.StockDataClientResponseStatus.Ok,
+                .Be(StockDataClientResponseStatus.Ok,
                     $"Actual status code: {response.ResponseStatus}.");
             response.ResponseMessage.Should().Be("RESPONSE_OK");
             response.Values[0]?.Datetime.Should().Be(new DateTime(2023, 12, 1, 00, 00, 00));

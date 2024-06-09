@@ -2,6 +2,7 @@
 using Bronto.Tests.Api.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static Bronto.Models.Api.Enums;
 
 namespace Bronto.Tests.Api
 {
@@ -26,7 +27,7 @@ namespace Bronto.Tests.Api
                 RealTimePrice responsePrice = JsonConvert.DeserializeObject<RealTimePrice>(responseString);
                 if (responsePrice.Price.Equals(0))
                 {
-                    responsePrice.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    responsePrice.ResponseStatus = StockDataClientResponseStatus.StockDataApiError;
                     responsePrice.ResponseMessage = "Invalid symbol or key.";
                     return responsePrice;                   
                 }
@@ -37,7 +38,7 @@ namespace Bronto.Tests.Api
             {
                 return new RealTimePrice()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                    ResponseStatus = StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()
                 };
             }
@@ -56,7 +57,7 @@ namespace Bronto.Tests.Api
 
                 if (string.IsNullOrEmpty(responseSymbol.Data.Symbol))
                 {
-                    responseSymbol.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    responseSymbol.ResponseStatus = StockDataClientResponseStatus.StockDataApiError;
                     responseSymbol.ResponseMessage = "Invalid symbol or key.";
                     return responseSymbol;
                 }
@@ -67,7 +68,7 @@ namespace Bronto.Tests.Api
             {
                 return new StockSymbolSearch()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                    ResponseStatus = StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()
                 };
             }
@@ -114,7 +115,7 @@ namespace Bronto.Tests.Api
 
                 if (string.IsNullOrEmpty(timeSeries?.Symbol) || values.Count == 0)
                 {
-                    timeSeries.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
+                    timeSeries.ResponseStatus = StockDataClientResponseStatus.StockDataApiError;
                     timeSeries.ResponseMessage = "Invalid symbol or API key";
 
                     return timeSeries;
@@ -126,7 +127,7 @@ namespace Bronto.Tests.Api
             {
                 return new StockDataTimeSeries()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
+                    ResponseStatus = StockDataClientResponseStatus.StockDataError,
                     ResponseMessage = e.ToString()
                 };
             }
