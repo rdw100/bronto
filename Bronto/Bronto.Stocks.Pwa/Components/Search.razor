@@ -1,0 +1,29 @@
+﻿@page "/search"
+
+<h3>Search Component</h3>
+
+<div>
+    <label for="searchInput">Search:</label>
+    <input id="searchInput" @bind="@SearchText" />
+</div>
+
+<div>
+    <label>Search Results:</label>
+    <span>@SearchText</span>
+</div>
+
+@code {
+    // private string _searchText = string.Empty;
+
+    [Parameter]
+    public string SearchText { get; set; }
+
+    // Event handler to update search results
+    private void UpdateSearchResults()
+    {
+        // Implement your search logic here (e.g., call an API, query a database, etc.)
+        // Assign the search results to a variable accessible in the parent page
+        // For example:
+        // searchResults = PerformSearch(searchText);
+    }
+}
