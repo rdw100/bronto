@@ -1,0 +1,15 @@
+﻿<h3>ChildComponent</h3>
+
+@code {
+    [Parameter] public string UserName { get; set; }
+    [Parameter] public EventCallback<string> UserNameChanged { get; set; }
+
+    private async Task OnUserNameChanged(ChangeEventArgs e)
+    {
+        UserName = e.Value.ToString();
+        await UserNameChanged.InvokeAsync(UserName);
+    }
+}
+
+<input type="text" @bind="UserName" @oninput="OnUserNameChanged" />
+<!-- Other child component content -->

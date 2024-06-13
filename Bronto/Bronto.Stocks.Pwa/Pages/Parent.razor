@@ -1,0 +1,14 @@
+﻿@page "/parent"
+
+<Bronto.Stocks.Pwa.Components.ChildComponent @bind-UserName="parentUserName" />
+
+<p>Parent UserName: @parentUserName</p>
+
+@code {
+    private string parentUserName = "Initial Value";
+
+    private void HandleUserNameChanged(string newUserName)
+    {
+        parentUserName = newUserName; // Update the parent value
+    }
+}
