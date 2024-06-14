@@ -1,0 +1,33 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentCombobox @bind-Value="SelectedStockSymbol" 
+    Autocomplete="ComboboxAutocomplete.Both" 
+    TOption="string">
+    @foreach (var stock in StockSymbols)
+    {
+        <FluentOption Value="@stock">@stock</FluentOption>
+    }
+</FluentCombobox>
+
+@code {
+    private string _selectedStockSymbol;
+
+    [Parameter]
+    public string SelectedStockSymbol
+    {
+        get => _selectedStockSymbol;
+        set
+        {
+            if (_selectedStockSymbol != value)
+            {
+                _selectedStockSymbol = value;
+                SelectedStockSymbolChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> SelectedStockSymbolChanged { get; set; }
+
+    private List<string> StockSymbols { get; set; } = new List<string> { "AAPL", "GOOG", "MSFT" };
+}
