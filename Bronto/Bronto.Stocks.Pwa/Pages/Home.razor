@@ -2,6 +2,7 @@
 @using Bronto.Models.Api
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
+@using System.Timers;
 @inject IPriceService priceService
 
 <PageTitle>Home</PageTitle>
@@ -11,8 +12,6 @@
 <p>Welcome to your new Fluent Blazor Financial Plot app.</p>
 
 <p>Finance plots display price data binned into time ranges.</p>
-
-@using System.Timers;
 
 <FluentSearch @ref=searchTest
               @bind-Value="SearchValue"
