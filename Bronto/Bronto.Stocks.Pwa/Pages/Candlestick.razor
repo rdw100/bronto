@@ -1,6 +1,7 @@
 ﻿@page "/candlestick"
 @using AutoMapper
 @using Bronto.Models.Api
+@using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
 @using ScottPlot
@@ -10,6 +11,27 @@
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
 <h3>Candlestick Chart</h3>
+
+<h3>Select a Stock Symbol</h3>
+
+<StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+
+<p>Selected Stock Symbol: @_selectedStockSymbol</p>
+
+@code {
+    private string _selectedStockSymbol ="AAPL";
+
+    public string SelectedStockSymbol {
+        get => _selectedStockSymbol;
+        set
+        {
+            _selectedStockSymbol = value ?? "AAPL";
+            _ = LoadData();
+            //BlazorPlot.Refresh();
+            // GetStocks(_selectedStockSymbol);
+        }
+    } 
+}
 
 @if (StockDataList is null)
 {
@@ -49,19 +71,30 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadData();
+        await base.OnInitializedAsync();
+    }
+    
+    private async Task LoadData()
+    {
         // get and plot time series price data
         try
         {
             loadFailed = false;
             prices = null;
-            prices = await GetStocks();
+            prices = await GetStocks(_selectedStockSymbol);
+            await RefreshPlot();
         }
         catch (Exception ex)
         {
             loadFailed = true;
             Console.WriteLine(ex.Message);
-        }
+        }        
+    }
 
+    protected async Task RefreshPlot()
+    {
+        BlazorPlot.Plot.Clear();
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
         BlazorPlot.Plot.XLabel("Time");
@@ -88,9 +121,10 @@ else
         await base.OnInitializedAsync();
     }
 
-    protected async Task<List<OHLC>> GetStocks()
+    protected async Task<List<OHLC>> GetStocks(string symbol)
     {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL","1day", "30");
+        
+        StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
         
         @if (StockDataList != null)
         {

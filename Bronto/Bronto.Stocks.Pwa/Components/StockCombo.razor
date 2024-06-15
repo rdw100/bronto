@@ -1,0 +1,31 @@
+﻿@using Bronto.Models
+@using Bronto.Stocks.Pwa.Interfaces
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IPriceService priceService
+
+<FluentCombobox @bind-Value="SelectedStockSymbol" 
+    Autocomplete="ComboboxAutocomplete.Both" 
+    TOption="string"
+    Items="@priceService.Symbols">
+</FluentCombobox>
+
+@code {
+    private string _selectedStockSymbol;
+
+    [Parameter]
+    public string SelectedStockSymbol
+    {
+        get => _selectedStockSymbol;
+        set
+        {
+            if (_selectedStockSymbol != value)
+            {
+                _selectedStockSymbol = value;
+                SelectedStockSymbolChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> SelectedStockSymbolChanged { get; set; }
+}
