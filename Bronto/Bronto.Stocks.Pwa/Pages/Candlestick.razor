@@ -6,6 +6,7 @@
 @using Bronto.Stocks.Pwa.Services
 @using ScottPlot
 @using ScottPlot.Blazor
+@* @using System.Timers *@
 @inject IStockService stockService
 
 <h1>ScottPlot 5 in Blazor</h1>
@@ -19,6 +20,8 @@
 <p>Selected Stock Symbol: @_selectedStockSymbol</p>
 
 @code {
+    private Timer? timer = null;
+
     private string _selectedStockSymbol ="AAPL";
 
     public string SelectedStockSymbol {
@@ -26,13 +29,18 @@
         set
         {
             _selectedStockSymbol = value ?? "AAPL";
-            _ = LoadData();
-            //BlazorPlot.Refresh();
-            // GetStocks(_selectedStockSymbol);
+            _ = LoadChart();
+            //StateHasChanged();
+            // DisposeTimer();
+            // //ShowMessageBar the debounce time in ms to the timer below
+            // timer = new Timer(400);
+            // timer.Elapsed += TimerElapsed_TickAsync;
+            // timer.Enabled = true;
+            // timer.Start();
         }
     } 
 }
-
+<p>You chose: @SelectedStockSymbol</p>
 @if (StockDataList is null)
 {
     <p>Populating ...</p>
@@ -61,6 +69,33 @@ else
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+<button @onclick="()=>Clear()">Clear</button>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Open</th>
+            <th>High</th>
+            <th>Low</th>
+            <th>Close</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (prices is not null)
+        {
+             @foreach (var price in prices)
+            {
+                <tr>
+                    <td>@price.DateTime.ToShortDateString()</td>
+                    <td>@price.Open</td>
+                    <td>@price.High</td>
+                    <td>@price.Low</td>
+                    <td>@price.Close</td>
+                </tr>
+            }       
+        }
+    </tbody>
+</table>
 
 @code {
     private bool loadFailed;
@@ -69,32 +104,48 @@ else
     public DesignThemeModes Mode { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await LoadData();
+    //     await base.OnInitializedAsync();
+    // }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadData();
-        await base.OnInitializedAsync();
+        if (firstRender)
+        {
+            // Perform initialization logic here
+            await LoadChart();
+        }
     }
-    
-    private async Task LoadData()
+
+    private async Task LoadChart()
     {
         // get and plot time series price data
         try
         {
+            BlazorPlot.Plot.Clear();
             loadFailed = false;
-            prices = null;
-            prices = await GetStocks(_selectedStockSymbol);
-            await RefreshPlot();
+            await LoadData();
+            BlazorPlot.Refresh();
+            StateHasChanged();
+            // await base.OnInitializedAsync();
         }
         catch (Exception ex)
         {
             loadFailed = true;
             Console.WriteLine(ex.Message);
-        }        
+        }
     }
 
-    protected async Task RefreshPlot()
+    private async Task LoadData()
     {
-        BlazorPlot.Plot.Clear();
+        prices = null;
+        prices = await GetStocks(_selectedStockSymbol);
+        //await RefreshPlot();
+
+        //StateHasChanged();
+        // BlazorPlot.Reset();
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
         BlazorPlot.Plot.XLabel("Time");
@@ -116,14 +167,46 @@ else
             BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
             BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
         };
-
-        BlazorPlot.Refresh();
-        await base.OnInitializedAsync();
     }
 
-    protected async Task<List<OHLC>> GetStocks(string symbol)
+    private void Clear()
     {
-        
+        BlazorPlot.Plot.Clear();
+        StateHasChanged();
+    }
+
+    // protected async Task RefreshPlot()
+    // {
+    //     BlazorPlot.Plot.Clear();
+    //     BlazorPlot.Plot.Add.Candlestick(prices);
+    //     BlazorPlot.Plot.Axes.DateTimeTicksBottom();
+    //     BlazorPlot.Plot.XLabel("Time");
+    //     BlazorPlot.Plot.YLabel("Price");
+    //     BlazorPlot.Plot.Title("Candlestick");
+
+    //     if (Mode == DesignThemeModes.Dark)
+    //     {
+    //         // change figure colors
+    //         BlazorPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#181818");
+    //         BlazorPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#1f1f1f");
+
+    //         // change axis and grid colors
+    //         BlazorPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#d7d7d7"));
+    //         BlazorPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#404040");
+
+    //         // change legend colors
+    //         BlazorPlot.Plot.Legend.BackgroundColor = ScottPlot.Color.FromHex("#404040");
+    //         BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
+    //         BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
+    //     };
+
+    //     BlazorPlot.Refresh();
+    //     StateHasChanged();
+    //     await base.OnInitializedAsync();
+    // }
+
+    protected async Task<List<OHLC>> GetStocks(string symbol)
+    {        
         StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
         
         @if (StockDataList != null)
@@ -133,6 +216,60 @@ else
             var mapper = config.CreateMapper();
             prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
         }
+
         return prices;
     }
+
+    // private async void TimerElapsed_TickAsync(object? sender, EventArgs e)
+    // {
+    //     DisposeTimer();
+    //     await InvokeAsync(OnSearch);
+    // }
+
+    // private void DisposeTimer()
+    // {
+    //     if (timer != null)
+    //     {
+    //         timer.Enabled = false;
+    //         timer.Elapsed -= TimerElapsed_TickAsync;
+    //         timer.Dispose();
+    //         timer = null;
+    //     }
+    // }
+
+    // private void HandleClear()
+    // {
+    //     if (string.IsNullOrWhiteSpace(SelectedStockSymbol))
+    //         return;
+
+    //     DisposeTimer();
+    //     // searchResults = defaultResults();
+    //     // SearchValue = string.Empty;
+    //     StateHasChanged();
+    // }
+
+    // private void OnSearch()
+    // {
+    //     if (!string.IsNullOrWhiteSpace(SelectedStockSymbol))
+    //     {
+    //         // string searchTerm = SearchValue.ToLower();
+
+    //         // List<string> temp = priceService.Symbols.Where(str => str.ToLower().Contains(searchTerm)).Select(str => str).ToList();
+    //         // if (temp.Count() > 0)
+    //         // {
+    //         //     searchResults = temp;
+    //         // }
+    //         // else
+    //         // {
+    //         //     searchResults = defaultResults();
+    //         // }
+    //         _ = LoadChart();
+    //         StateHasChanged();
+    //     }
+    //     else
+    //     {
+    //         // searchResults = defaultResults();
+    //         StateHasChanged();
+    //     }
+    // }
 }
