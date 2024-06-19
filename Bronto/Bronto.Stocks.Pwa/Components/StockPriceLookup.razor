@@ -1,0 +1,78 @@
+﻿@page "/storepricelookup"
+@using Bronto.Models.Api
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
+@using System.Globalization
+@inject IPriceService priceService
+
+<h3>Stock Price Lookup</h3>
+
+<div>
+    <label for="stockSymbol">Enter Stock Symbol:</label>
+    <input id="stockSymbol" @bind="stockSymbol" />
+
+    @if (isControlDisabled)
+    {
+        <p>The control is disabled. Please wait... @remainingTimeInSeconds seconds</p>
+    }
+    else
+    {
+        <button @onclick="GetStockPrice">Get Price</button>
+    }    
+</div>
+
+@if (stockPrice != null)
+{
+    <p>Stock: @stockSymbol</p>
+    <p>Price: @stockPrice.Price.ToString("C", CultureInfo.GetCultureInfo("en-US"))</p>
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p>Error: @errorMessage</p>
+}
+
+@code {
+    private string stockSymbol;
+    private RealTimePrice? stockPrice = null;
+    private string errorMessage;
+    private bool isControlDisabled = false;
+    private int remainingTimeInSeconds = 60;
+
+    // Call external service to get the stock price based on stockSymbol
+    private async Task GetStockPrice()
+    {
+        try
+        {
+            stockPrice = await priceService.GetPriceAsync(stockSymbol);
+
+            if (stockPrice.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+            {
+                errorMessage = $"Error: {stockPrice.ResponseStatus} - {stockPrice.ResponseMessage}";
+                // Disable the control
+                isControlDisabled = true;
+
+                // Start the countdown timer
+                System.Threading.Timer timer = new System.Threading.Timer(async _ =>
+                {
+                    if (remainingTimeInSeconds > 0)
+                    {
+                        remainingTimeInSeconds--; // Decrement the remaining time
+                        
+                        await InvokeAsync(StateHasChanged); // Update the UI
+                    }
+                    else
+                    {
+                        // Countdown completed, re-enable the control
+                        isControlDisabled = false;
+                        errorMessage = string.Empty;
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }, null, 1000, 1000); // Timer ticks every 1 second
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}
