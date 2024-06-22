@@ -1,6 +1,7 @@
 ﻿using Bronto.Models.Api;
 using Bronto.Stocks.Pwa.Interfaces;
 using System.Net.Http.Json;
+using static Bronto.Models.Api.Enums;
 
 namespace Bronto.Stocks.Pwa.Services
 {
@@ -22,9 +23,22 @@ namespace Bronto.Stocks.Pwa.Services
             {
                 stockDataList  = await response.Content.ReadFromJsonAsync<StockDataTimeSeries>();
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                // Handle 429 Too Many Requests
+                return new StockDataTimeSeries
+                {
+                    ResponseMessage = "Rate limit exceeded. Please wait a while before making more requests.",
+                    ResponseStatus = StockDataClientResponseStatus.RateLimitExceeded
+                };
+            }
             else
             {
-                Console.WriteLine($"Error: {response.StatusCode}");
+                return new StockDataTimeSeries
+                {
+                    ResponseMessage = $"Stock API Error: {response.StatusCode}",
+                    ResponseStatus = StockDataClientResponseStatus.StockDataApiError
+                };
             }
 
             return stockDataList;

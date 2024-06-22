@@ -4,7 +4,7 @@ using Bronto.Stocks.Pwa.Interfaces;
 namespace Bronto.Stocks.Pwa.Services
 {
     /// <summary>
-    /// Represents a collection of stocks that an investor holds.
+    /// Represents a service for a collection of stocks that an investor holds.
     /// </summary>
     public class PortfolioService : IPortfolioService
     {
