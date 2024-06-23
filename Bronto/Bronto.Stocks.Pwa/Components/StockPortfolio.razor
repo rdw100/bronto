@@ -99,21 +99,24 @@
     private void AddStock(string symbol)
     {
         // Validate input (e.g., check if stockSymbol is not empty)
-        if (!string.IsNullOrWhiteSpace(symbol))
+        if (!StockExists(symbol))
         {
-            // Create a new stock with the entered symbol
-            var newStock = new Stock
-                {
-                    Symbol = symbol
-                };
+            if (!string.IsNullOrWhiteSpace(symbol))
+            {
+                // Create a new stock with the entered symbol
+                var newStock = new Stock
+                    {
+                        Symbol = symbol
+                    };
 
-            // Add the stock to the portfolio
-            PortfolioService.AddStock(newStock);
-            ShowToast("Added", newStock.Symbol, ToastIntent.Success);
-        }
-        else
-        {
-            ShowToast("Invalid", "is blank.", ToastIntent.Error);
+                // Add the stock to the portfolio
+                PortfolioService.AddStock(newStock);
+                ShowToast("Added", newStock.Symbol, ToastIntent.Success);
+            }
+            else
+            {
+                ShowToast("Invalid", "is blank.", ToastIntent.Error);
+            }
         }
     }
 
@@ -158,23 +161,18 @@
         }
     }
 
-    private void StockExists(string symbol)
+    private bool StockExists(string symbol)
     {
         var exists = PortfolioService.StockExists(symbol);
         if (exists)
         {
-            Console.WriteLine("Stock exists.");
+            ShowToast("{symbol}", "exists.", ToastIntent.Warning);
         }
-        else
-        {
-            Console.WriteLine("Stock does not exist.");
-        }
+        return exists;
     }
 
     void ShowToast(string action, string symbol, ToastIntent intent)
     {
-        Random rnd = new();
-
         var message = $"{action} Stock {symbol} #{counter++}";
         ToastService.ShowToast(intent, message);
     }
