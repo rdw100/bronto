@@ -4,7 +4,7 @@
 
 <div>
     <label for="searchInput">Search:</label>
-    <input id="searchInput" @bind="@SearchText" />
+    <input type="text" @bind="SearchText" @oninput="OnSearchTextChanged" />
 </div>
 
 <div>
@@ -13,17 +13,11 @@
 </div>
 
 @code {
-    // private string _searchText = string.Empty;
+    [Parameter] public string SearchText { get; set; }
+    [Parameter] public EventCallback<string> SearchTextChanged { get; set; }
 
-    [Parameter]
-    public string SearchText { get; set; }
-
-    // Event handler to update search results
-    private void UpdateSearchResults()
+    private async Task OnSearchTextChanged()
     {
-        // Implement your search logic here (e.g., call an API, query a database, etc.)
-        // Assign the search results to a variable accessible in the parent page
-        // For example:
-        // searchResults = PerformSearch(searchText);
+        await SearchTextChanged.InvokeAsync(SearchText);
     }
 }
