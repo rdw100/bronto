@@ -6,7 +6,7 @@
 @using Bronto.Stocks.Pwa.Services
 @using ScottPlot
 @using ScottPlot.Blazor
-@* @using System.Timers *@
+@using System.Globalization
 @inject IStockService stockService
 
 <h1>ScottPlot 5 in Blazor</h1>
@@ -30,46 +30,36 @@
         {
             _selectedStockSymbol = value ?? "AAPL";
             _ = LoadChart();
-            //StateHasChanged();
-            // DisposeTimer();
-            // //ShowMessageBar the debounce time in ms to the timer below
-            // timer = new Timer(400);
-            // timer.Elapsed += TimerElapsed_TickAsync;
-            // timer.Enabled = true;
-            // timer.Start();
         }
     } 
 }
+
 <p>You chose: @SelectedStockSymbol</p>
-@if (StockDataList is null)
+
+@if (loadFailed)
+{
+    <p><span style="color: red;">@errorMessage</span></p>
+}
+else if (StockDataList is null)
 {
     <p>Populating ...</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
 }
 else if (!StockDataList.Values.Any())
 {
     <p>Loading ...</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
-}
-else if (loadFailed)
-{
-    <p>Failed to load data.</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
 }
 else
 {
     <p>Symbol: @StockDataList.Symbol</p>
     <p>Interval: @StockDataList.Interval</p>
     <p>Updated: @StockDataList.Values[0].Datetime</p>
+    <p><button @onclick="()=>Clear()">Clear</button></p>
 }
 
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
-<button @onclick="()=>Clear()">Clear</button>
+
 <table class="table">
     <thead>
         <tr>
@@ -87,10 +77,10 @@ else
             {
                 <tr>
                     <td>@price.DateTime.ToShortDateString()</td>
-                    <td>@price.Open</td>
-                    <td>@price.High</td>
-                    <td>@price.Low</td>
-                    <td>@price.Close</td>
+                    <td>@price.Open.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
+                    <td>@price.High.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
+                    <td>@price.Low.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
+                    <td>@price.Close.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
                 </tr>
             }       
         }
@@ -99,29 +89,23 @@ else
 
 @code {
     private bool loadFailed;
+    private string errorMessage;
     private StockDataTimeSeries StockDataList { get; set; }
     private List<OHLC> prices { get; set; }
     public DesignThemeModes Mode { get; set; }
-    BlazorPlot BlazorPlot { get; set; } = new();
-
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     await LoadData();
-    //     await base.OnInitializedAsync();
-    // }
+    BlazorPlot BlazorPlot { get; set; } = new(); 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Perform initialization logic here
             await LoadChart();
         }
     }
 
+    // get and plot time series price data
     private async Task LoadChart()
     {
-        // get and plot time series price data
         try
         {
             BlazorPlot.Plot.Clear();
@@ -129,12 +113,10 @@ else
             await LoadData();
             BlazorPlot.Refresh();
             StateHasChanged();
-            // await base.OnInitializedAsync();
         }
         catch (Exception ex)
         {
             loadFailed = true;
-            Console.WriteLine(ex.Message);
         }
     }
 
@@ -142,10 +124,7 @@ else
     {
         prices = null;
         prices = await GetStocks(_selectedStockSymbol);
-        //await RefreshPlot();
 
-        //StateHasChanged();
-        // BlazorPlot.Reset();
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
         BlazorPlot.Plot.XLabel("Time");
@@ -169,107 +148,31 @@ else
         };
     }
 
-    private void Clear()
-    {
-        BlazorPlot.Plot.Clear();
-        StateHasChanged();
-    }
-
-    // protected async Task RefreshPlot()
-    // {
-    //     BlazorPlot.Plot.Clear();
-    //     BlazorPlot.Plot.Add.Candlestick(prices);
-    //     BlazorPlot.Plot.Axes.DateTimeTicksBottom();
-    //     BlazorPlot.Plot.XLabel("Time");
-    //     BlazorPlot.Plot.YLabel("Price");
-    //     BlazorPlot.Plot.Title("Candlestick");
-
-    //     if (Mode == DesignThemeModes.Dark)
-    //     {
-    //         // change figure colors
-    //         BlazorPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#181818");
-    //         BlazorPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#1f1f1f");
-
-    //         // change axis and grid colors
-    //         BlazorPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#d7d7d7"));
-    //         BlazorPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#404040");
-
-    //         // change legend colors
-    //         BlazorPlot.Plot.Legend.BackgroundColor = ScottPlot.Color.FromHex("#404040");
-    //         BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
-    //         BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
-    //     };
-
-    //     BlazorPlot.Refresh();
-    //     StateHasChanged();
-    //     await base.OnInitializedAsync();
-    // }
-
     protected async Task<List<OHLC>> GetStocks(string symbol)
     {        
         StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
-        
-        @if (StockDataList != null)
+
+        @if (StockDataList != null  && StockDataList.ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
         {
             // Use AutoMapper mapping ScottPlot's OHLC
             var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
             var mapper = config.CreateMapper();
             prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
         }
+        else if (StockDataList.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+        {
+            loadFailed = true;
+            errorMessage = $"Error: {StockDataList.ResponseStatus} {StockDataList.ResponseMessage}";
+            prices = null;
+            StateHasChanged();
+        }
 
         return prices;
     }
-
-    // private async void TimerElapsed_TickAsync(object? sender, EventArgs e)
-    // {
-    //     DisposeTimer();
-    //     await InvokeAsync(OnSearch);
-    // }
-
-    // private void DisposeTimer()
-    // {
-    //     if (timer != null)
-    //     {
-    //         timer.Enabled = false;
-    //         timer.Elapsed -= TimerElapsed_TickAsync;
-    //         timer.Dispose();
-    //         timer = null;
-    //     }
-    // }
-
-    // private void HandleClear()
-    // {
-    //     if (string.IsNullOrWhiteSpace(SelectedStockSymbol))
-    //         return;
-
-    //     DisposeTimer();
-    //     // searchResults = defaultResults();
-    //     // SearchValue = string.Empty;
-    //     StateHasChanged();
-    // }
-
-    // private void OnSearch()
-    // {
-    //     if (!string.IsNullOrWhiteSpace(SelectedStockSymbol))
-    //     {
-    //         // string searchTerm = SearchValue.ToLower();
-
-    //         // List<string> temp = priceService.Symbols.Where(str => str.ToLower().Contains(searchTerm)).Select(str => str).ToList();
-    //         // if (temp.Count() > 0)
-    //         // {
-    //         //     searchResults = temp;
-    //         // }
-    //         // else
-    //         // {
-    //         //     searchResults = defaultResults();
-    //         // }
-    //         _ = LoadChart();
-    //         StateHasChanged();
-    //     }
-    //     else
-    //     {
-    //         // searchResults = defaultResults();
-    //         StateHasChanged();
-    //     }
-    // }
+    
+    private void Clear()
+    {
+        BlazorPlot.Plot.Clear();
+        StateHasChanged();
+    }
 }
