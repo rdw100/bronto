@@ -1,0 +1,65 @@
+﻿@page "/BigChart"
+
+@using ScottPlot
+@using ScottPlot.Blazor
+@using ScottPlot.NamedColors
+@using System
+
+<h1>ScottPlot 5 in Blazor</h1>
+
+<select @bind="selectedOption">
+    <option value="area">Area Chart</option>
+    <option value="line">Line and Bar Chart</option>
+</select>
+
+@if (selectedOption == "area")
+{
+    <BlazorPlot @ref=BlazorPlotArea Style="width: 600px; height: 400px;" />
+}
+else if (selectedOption == "line")
+{
+    <BlazorPlot @ref=BlazorPlotLine Style="width: 600px; height: 400px;" />
+}
+
+@code {
+    BlazorPlot BlazorPlotArea { get; set; } = new();
+    BlazorPlot BlazorPlotLine { get; set; } = new();
+    string selectedOption = "area";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (selectedOption == "area")
+        {
+            // Generate OHLC data for 5 days
+            List<OHLC> prices = new();
+            DateTime currentDate = DateTime.Now.Date;
+            TimeSpan timeSpan = TimeSpan.FromDays(1);
+
+            for (int i = 0; i < 5; i++)
+            {
+                double open = Generate.RandomNumber(100, 200);
+                double close = Generate.RandomNumber(100, 200);
+                double high = Math.Max(open, close) + Generate.RandomNumber(5);
+                double low = Math.Min(open, close) - Generate.RandomNumber(5);
+
+                prices.Add(new OHLC(open, high, low, close, currentDate, timeSpan));
+                currentDate = currentDate.AddDays(1);
+            }
+
+            BlazorPlotArea.Plot.Add.Candlestick(prices);
+            BlazorPlotArea.Plot.Axes.DateTimeTicksBottom();
+        }
+        else if (selectedOption == "line")
+        {
+            // Generate some sample data for line and bar chart
+            double[] prices = { 100, 110, 105, 120, 125 };
+            double[] volumes = { 1.000, 1.200, .900, 1.500, 1.300 };
+            double[] daysNumeric = { 1, 2, 3, 4, 5 };
+
+            BlazorPlotLine.Plot.Add.Scatter(daysNumeric, prices);// Signal(prices);
+            BlazorPlotLine.Plot.Add.Bars(daysNumeric, volumes);
+            BlazorPlotLine.Plot.XLabel("Volume (Millions)");
+            BlazorPlotLine.Plot.YLabel("Price");
+        }
+    }
+}
