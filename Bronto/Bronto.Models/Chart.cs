@@ -1,164 +1,164 @@
 ﻿namespace Bronto.Models.Api.Chart
 {
-    using Newtonsoft.Json;
     using System.Collections.Generic;
+    using System.Text.Json.Serialization;
 
     public partial class ChartResult
     {
-        [JsonProperty("chart")]
+        [JsonPropertyName("chart")]
         public Chart Chart { get; set; }
     }
 
     public partial class Chart
     {
-        [JsonProperty("result")]
+        [JsonPropertyName("result")]
         public List<Result> Result { get; set; }
 
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public object Error { get; set; }
     }
 
     public partial class Result
     {
-        [JsonProperty("meta")]
+        [JsonPropertyName("meta")]
         public Meta Meta { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public List<long> Timestamp { get; set; }
 
-        [JsonProperty("indicators")]
+        [JsonPropertyName("indicators")]
         public Indicators Indicators { get; set; }
     }
 
     public partial class Indicators
     {
-        [JsonProperty("quote")]
+        [JsonPropertyName("quote")]
         public List<Quote> Quote { get; set; }
 
-        [JsonProperty("adjclose")]
+        [JsonPropertyName("adjclose")]
         public List<Adjclose> Adjclose { get; set; }
     }
 
     public partial class Adjclose
     {
-        [JsonProperty("adjclose")]
+        [JsonPropertyName("adjclose")]
         public List<double> AdjcloseAdjclose { get; set; }
     }
 
     public partial class Quote
     {
-        [JsonProperty("open")]
+        [JsonPropertyName("open")]
         public List<double> Open { get; set; }
 
-        [JsonProperty("high")]
+        [JsonPropertyName("high")]
         public List<double> High { get; set; }
 
-        [JsonProperty("low")]
+        [JsonPropertyName("low")]
         public List<double> Low { get; set; }
 
-        [JsonProperty("close")]
+        [JsonPropertyName("close")]
         public List<double> Close { get; set; }
 
-        [JsonProperty("volume")]
+        [JsonPropertyName("volume")]
         public List<long> Volume { get; set; }
     }
 
     public partial class Meta
     {
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("exchangeName")]
+        [JsonPropertyName("exchangeName")]
         public string ExchangeName { get; set; }
 
-        [JsonProperty("fullExchangeName")]
+        [JsonPropertyName("fullExchangeName")]
         public string FullExchangeName { get; set; }
 
-        [JsonProperty("instrumentType")]
+        [JsonPropertyName("instrumentType")]
         public string InstrumentType { get; set; }
 
-        [JsonProperty("firstTradeDate")]
+        [JsonPropertyName("firstTradeDate")]
         public long FirstTradeDate { get; set; }
 
-        [JsonProperty("regularMarketTime")]
+        [JsonPropertyName("regularMarketTime")]
         public long RegularMarketTime { get; set; }
 
-        [JsonProperty("hasPrePostMarketData")]
+        [JsonPropertyName("hasPrePostMarketData")]
         public bool HasPrePostMarketData { get; set; }
 
-        [JsonProperty("gmtoffset")]
+        [JsonPropertyName("gmtoffset")]
         public long Gmtoffset { get; set; }
 
-        [JsonProperty("timezone")]
+        [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
 
-        [JsonProperty("exchangeTimezoneName")]
+        [JsonPropertyName("exchangeTimezoneName")]
         public string ExchangeTimezoneName { get; set; }
 
-        [JsonProperty("regularMarketPrice")]
+        [JsonPropertyName("regularMarketPrice")]
         public double RegularMarketPrice { get; set; }
 
-        [JsonProperty("fiftyTwoWeekHigh")]
+        [JsonPropertyName("fiftyTwoWeekHigh")]
         public double FiftyTwoWeekHigh { get; set; }
 
-        [JsonProperty("fiftyTwoWeekLow")]
+        [JsonPropertyName("fiftyTwoWeekLow")]
         public double FiftyTwoWeekLow { get; set; }
 
-        [JsonProperty("regularMarketDayHigh")]
+        [JsonPropertyName("regularMarketDayHigh")]
         public double RegularMarketDayHigh { get; set; }
 
-        [JsonProperty("regularMarketDayLow")]
+        [JsonPropertyName("regularMarketDayLow")]
         public double RegularMarketDayLow { get; set; }
 
-        [JsonProperty("regularMarketVolume")]
+        [JsonPropertyName("regularMarketVolume")]
         public long RegularMarketVolume { get; set; }
 
-        [JsonProperty("chartPreviousClose")]
+        [JsonPropertyName("chartPreviousClose")]
         public double ChartPreviousClose { get; set; }
 
-        [JsonProperty("priceHint")]
+        [JsonPropertyName("priceHint")]
         public long PriceHint { get; set; }
 
-        [JsonProperty("currentTradingPeriod")]
+        [JsonPropertyName("currentTradingPeriod")]
         public CurrentTradingPeriod CurrentTradingPeriod { get; set; }
 
-        [JsonProperty("dataGranularity")]
+        [JsonPropertyName("dataGranularity")]
         public string DataGranularity { get; set; }
 
-        [JsonProperty("range")]
+        [JsonPropertyName("range")]
         public string Range { get; set; }
 
-        [JsonProperty("validRanges")]
+        [JsonPropertyName("validRanges")]
         public List<string> ValidRanges { get; set; }
     }
 
     public partial class CurrentTradingPeriod
     {
-        [JsonProperty("pre")]
+        [JsonPropertyName("pre")]
         public Post Pre { get; set; }
 
-        [JsonProperty("regular")]
+        [JsonPropertyName("regular")]
         public Post Regular { get; set; }
 
-        [JsonProperty("post")]
+        [JsonPropertyName("post")]
         public Post Post { get; set; }
     }
 
     public partial class Post
     {
-        [JsonProperty("timezone")]
+        [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
 
-        [JsonProperty("start")]
+        [JsonPropertyName("start")]
         public long Start { get; set; }
 
-        [JsonProperty("end")]
+        [JsonPropertyName("end")]
         public long End { get; set; }
 
-        [JsonProperty("gmtoffset")]
+        [JsonPropertyName("gmtoffset")]
         public long Gmtoffset { get; set; }
     }
 }
