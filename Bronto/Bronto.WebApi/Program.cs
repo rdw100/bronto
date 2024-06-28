@@ -3,6 +3,15 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string[] origins = new string[]
+{
+    "https://localhost:7048",
+    "https://localhost:7247",
+    "https://localhost:7228", 
+    "https://localhost:7270"
+    // Add more origins as needed
+};
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -12,13 +21,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyAllowSpecificOrigins",
-    policy => {
-        policy
-            .WithOrigins("https://localhost:7228", "https://localhost:7247", "https://localhost:7270")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder.WithOrigins(origins)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
 });
 
 builder.Services.AddRateLimiter(_ =>
@@ -78,7 +84,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.UseCors("MyAllowSpecificOrigins");
+app.UseCors("AllowSpecificOrigin");
 
 app.UseRateLimiter();
 

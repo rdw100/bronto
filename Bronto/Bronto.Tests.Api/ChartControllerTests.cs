@@ -1,9 +1,9 @@
-﻿using Bronto.Models.Api.Chart;
+﻿using Bronto.Models;
 using Bronto.WebApi.Controllers;
+using Bronto.WebApi.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
 
 namespace Bronto.Tests.Api
 {
@@ -22,7 +22,7 @@ namespace Bronto.Tests.Api
         }
 
         [Fact]
-        public async Task GetStockDataAsync_ShouldReturnStock()
+        public async Task GetStockDataAsync_ShouldReturnOhlcList()
         {
             // Arrange: Set up context
             var symbol = "AAPL";
@@ -32,19 +32,15 @@ namespace Bronto.Tests.Api
 
             // Assert: Verify the result
             Assert.NotNull(result);
-            Assert.IsType<OkObjectResult>(result);            
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var content = okResult.Value.ToString();
-            ChartResult newResult = JsonSerializer.Deserialize<ChartResult>(content);
-            var actual = Assert.IsType<ChartResult>(newResult);
-            actual.Chart.Result.Should().NotBeNull();
-            List<Result> result1 = actual.Chart.Result;
-            result1.Count.Should().BeGreaterThanOrEqualTo(1);
-            List<Quote> quote1 = actual.Chart.Result[0].Indicators.Quote;
-            quote1.Count.Should().BeGreaterThanOrEqualTo(1);
-            List<double> open1 = actual.Chart.Result[0].Indicators.Quote[0].Open;
-            open1[0].Should().BeGreaterThanOrEqualTo(1);
-            open1[0].Should().BePositive();
+
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var ohlcList = Assert.IsType<List<MyOHLC>>(okResult.Value);
+
+            ohlcList.Count.Should().BePositive();
+            ohlcList[0].Open.Should().BePositive();
+            ohlcList[0].High.Should().BePositive();
+            ohlcList[0].Low.Should().BePositive();
+            ohlcList[0].Close.Should().BePositive();
         }
     }
 }

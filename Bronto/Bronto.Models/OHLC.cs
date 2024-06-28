@@ -1,6 +1,8 @@
-﻿namespace Bronto.Models
+﻿using Bronto.Models.Api;
+
+namespace Bronto.Models
 {
-    public struct MyOHLC
+    public class MyOHLC : BaseResponse
     {
         public double Open { get; set; }
 
@@ -13,6 +15,10 @@
         public DateTime DateTime { get; set; }
 
         public TimeSpan TimeSpan { get; set; }
+
+        public MyOHLC()
+        {
+        }
 
         public MyOHLC(double open, double high, double low, double close, DateTime start, TimeSpan span)
         {
@@ -41,5 +47,11 @@
             }
             return ohlcs;
         }   
+    }
+
+    public class BaseResponse
+    {
+        public Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
+        public string ResponseMessage { get; set; } = "RESPONSE_OK";
     }
 }

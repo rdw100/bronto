@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Bronto.Models;
+using Bronto.WebApi.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Bronto.WebApi.Controllers
 {
@@ -6,24 +8,19 @@ namespace Bronto.WebApi.Controllers
     [ApiController]
     public class ChartController : ControllerBase
     {
-        private readonly HttpClient _httpClient;
-
         private IConfiguration _config { get; set; }
 
-        protected internal string _baseUrl { get; set; }
+        private readonly ChartService _chartService;
 
         public ChartController(IConfiguration iConfig)
         {
             _config = iConfig;
-            _baseUrl = _config.GetSection("FreeApiV8")["Host"];
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri($"https://{_baseUrl}/");
-            _httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
+            _chartService =  new ChartService(_config);
         }
 
         // GET api/<ChartController>/AAPL
         [HttpGet]
-        public async Task<IActionResult> GetStockData(
+        public async Task<ActionResult<List<MyOHLC>>> GetStockData(
             [FromQuery] string symbol,
             [FromQuery] string interval = "1d", // Default interval is 1 day
             [FromQuery] string range = "5d",   // Default range is 5 days
@@ -47,25 +44,10 @@ namespace Bronto.WebApi.Controllers
                 period2 = friday.ToUnixTimeSeconds();
             }
 
-            // Construct the API URL//{_baseUrl}
-            var apiUrl = $"{symbol}?interval={interval}&range={range}&period1={period1}&period2={period2}";
-
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync();
-
-                    // Process the data or return it as-is
-                    return Ok(data);
-                }
-                else
-                {
-                    // Handle the error condition
-                    return StatusCode((int)response.StatusCode);
-                }
+                var response = await _chartService.GetStockData(symbol, interval, range, period1, period2);
+                return Ok(response);
             }
             catch (HttpRequestException)
             {
