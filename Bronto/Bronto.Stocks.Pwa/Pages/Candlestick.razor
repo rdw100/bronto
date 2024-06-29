@@ -1,5 +1,6 @@
 ﻿@page "/candlestick"
 @using AutoMapper
+@using Bronto.Models
 @using Bronto.Models.Api
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Interfaces
@@ -7,7 +8,7 @@
 @using ScottPlot
 @using ScottPlot.Blazor
 @using System.Globalization
-@inject IStockService stockService
+@inject IChartService chartService
 
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
@@ -22,16 +23,17 @@
 @code {
     private Timer? timer = null;
 
-    private string _selectedStockSymbol ="AAPL";
+    private string _selectedStockSymbol = "AAPL";
 
-    public string SelectedStockSymbol {
+    public string SelectedStockSymbol
+    {
         get => _selectedStockSymbol;
         set
         {
             _selectedStockSymbol = value ?? "AAPL";
             _ = LoadChart();
         }
-    } 
+    }
 }
 
 <p>You chose: @SelectedStockSymbol</p>
@@ -44,15 +46,18 @@ else if (StockDataList is null)
 {
     <p>Populating ...</p>
 }
-else if (!StockDataList.Values.Any())
+else if (!StockDataList.Any())
 {
     <p>Loading ...</p>
 }
 else
 {
-    <p>Symbol: @StockDataList.Symbol</p>
-    <p>Interval: @StockDataList.Interval</p>
-    <p>Updated: @StockDataList.Values[0].Datetime</p>
+    <p>Symbol: @_selectedStockSymbol</p>
+    @*
+        <p>Symbol: @StockDataList.Symbol</p>
+        <p>Interval: @StockDataList.Interval</p>
+        <p>Updated: @StockDataList.Values[0].Datetime</p>
+    *@
     <p><button @onclick="()=>Clear()">Clear</button></p>
 }
 
@@ -73,7 +78,7 @@ else
     <tbody>
         @if (prices is not null)
         {
-             @foreach (var price in prices)
+            @foreach (var price in prices)
             {
                 <tr>
                     <td>@price.DateTime.ToShortDateString()</td>
@@ -82,7 +87,7 @@ else
                     <td>@price.Low.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
                     <td>@price.Close.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
                 </tr>
-            }       
+            }
         }
     </tbody>
 </table>
@@ -90,10 +95,11 @@ else
 @code {
     private bool loadFailed;
     private string errorMessage;
-    private StockDataTimeSeries StockDataList { get; set; }
+    //private StockDataTimeSeries StockDataList { get; set; }
+    private List<MyOHLC> StockDataList { get; set; }
     private List<OHLC> prices { get; set; }
     public DesignThemeModes Mode { get; set; }
-    BlazorPlot BlazorPlot { get; set; } = new(); 
+    BlazorPlot BlazorPlot { get; set; } = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -149,27 +155,28 @@ else
     }
 
     protected async Task<List<OHLC>> GetStocks(string symbol)
-    {        
-        StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
+    {
+        StockDataList = await chartService.GetStockData(symbol);
+        // StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
 
-        @if (StockDataList != null  && StockDataList.ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
+        @if (StockDataList != null && StockDataList[0].ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
         {
             // Use AutoMapper mapping ScottPlot's OHLC
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
+            var config = new MapperConfiguration(cfg => cfg.CreateMap<MyOHLC, OHLC>());
             var mapper = config.CreateMapper();
-            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
+            prices = mapper.Map<List<OHLC>>(StockDataList.ToList());
         }
-        else if (StockDataList.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+        else if (StockDataList[0].ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
         {
             loadFailed = true;
-            errorMessage = $"Error: {StockDataList.ResponseStatus} {StockDataList.ResponseMessage}";
+            errorMessage = $"Error: {StockDataList[0].ResponseStatus} {StockDataList[0].ResponseMessage}";
             prices = null;
             StateHasChanged();
         }
 
         return prices;
     }
-    
+
     private void Clear()
     {
         BlazorPlot.Plot.Clear();

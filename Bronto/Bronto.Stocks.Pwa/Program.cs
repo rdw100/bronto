@@ -17,6 +17,10 @@ builder.Services.AddHttpClient<IPriceService, PriceService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7085/");
 });
+builder.Services.AddHttpClient<IChartService, ChartService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7085/");
+});
 builder.Services.AddSingleton<IWatchlistService, WatchlistService>();
 builder.Services.AddSingleton<IPortfolioService, PortfolioService>();
 
