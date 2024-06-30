@@ -1,6 +1,7 @@
 ﻿using Bronto.Models;
 using Bronto.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Bronto.WebApi.Controllers
 {
@@ -11,11 +12,18 @@ namespace Bronto.WebApi.Controllers
         private IConfiguration _config { get; set; }
 
         private readonly ChartService _chartService;
+        private readonly IMemoryCache _cache;
 
         public ChartController(IConfiguration iConfig)
         {
             _config = iConfig;
-            _chartService =  new ChartService(_config);
+        }
+
+        public ChartController(IConfiguration iConfig, IMemoryCache cache, ChartService chartService)
+        {
+            _config = iConfig;
+            _cache = cache;
+            _chartService = chartService;
         }
 
         // GET api/<ChartController>/AAPL

@@ -2,19 +2,22 @@
 using Bronto.Models.Api.Chart;
 using Bronto.WebApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 
 namespace Bronto.WebApi.Services
 {
     public class ChartService : IChartService
     {
+        private readonly IMemoryCache _cache;
         private readonly HttpClient _httpClient;
         private IConfiguration _config { get; set; }
         protected internal string _baseUrl { get; set; }
 
-        public ChartService(IConfiguration iConfig)
+        public ChartService(IConfiguration iConfig, IMemoryCache cache)
         {
             _config = iConfig;
+            _cache = cache;
             _baseUrl = _config.GetSection("FreeApiV8")["Host"];
             _httpClient = new HttpClient();
             _httpClient.BaseAddress = new Uri($"https://{_baseUrl}/");
@@ -29,27 +32,38 @@ namespace Bronto.WebApi.Services
             long? period1 = null,  // Default period1 is null (to be calculated)
             long? period2 = null)  // Default period2 is null (to be calculated)
         {
-
             // Construct the API URL//{_baseUrl}
             var apiUrl = $"{symbol}?interval={interval}&range={range}&period1={period1}&period2={period2}";
 
             try
             {
-                var response = await _httpClient.GetAsync(apiUrl);                
+                if (!_cache.TryGetValue(symbol, out List<MyOHLC> ohlcList))
+                {                    
+                    var response = await _httpClient.GetAsync(apiUrl);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Parse the response and create a Chart object
-                    var data = await response.Content.ReadAsStringAsync();
-                    var ohlcList = ParseJsonToOHLC(data);
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(120))
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                    .SetPriority(CacheItemPriority.Normal)
+                    .SetSize(1024);
 
-                    return ohlcList;
+                    if (response.IsSuccessStatusCode)
+                    {   
+                        // Parse the response and create a Chart object
+                        var data = await response.Content.ReadAsStringAsync();
+                        ohlcList = ParseJsonToOHLC(data);
+
+                        // Cache the data for future requests
+                        _cache.Set(symbol, ohlcList, cacheEntryOptions);
+                    }
+                    else
+                    {
+                        // Handle non-success status codes (e.g., log, throw exception, etc.)
+                        throw new Exception($"HTTP request failed with status code {response.StatusCode}");
+                    }
                 }
-                else
-                {
-                    // Handle non-success status codes (e.g., log, throw exception, etc.)
-                    throw new Exception($"HTTP request failed with status code {response.StatusCode}");
-                }
+
+                return ohlcList;
             }
             catch (HttpRequestException ex)
             {
