@@ -14,11 +14,6 @@ namespace Bronto.WebApi.Controllers
         private readonly ChartService _chartService;
         private readonly IMemoryCache _cache;
 
-        public ChartController(IConfiguration iConfig)
-        {
-            _config = iConfig;
-        }
-
         public ChartController(IConfiguration iConfig, IMemoryCache cache, ChartService chartService)
         {
             _config = iConfig;
@@ -36,20 +31,41 @@ namespace Bronto.WebApi.Controllers
             [FromQuery] long? period2 = null)  // Default period2 is null (to be calculated)
         {
             // Calculate default period1 and period2 if not provided
-            if (!period1.HasValue)
+            if (!period1.HasValue || !period2.HasValue)
             {
-                // Get Unix timestamp for Monday of the current week
-                var now = DateTimeOffset.UtcNow;
-                var monday = now.AddDays(-(int)now.DayOfWeek + (int)DayOfWeek.Monday);
-                period1 = monday.ToUnixTimeSeconds();
-            }
+                DateTime today = DateTime.Today;
+                DateTime monday;
+                DateTime friday;
 
-            if (!period2.HasValue)
-            {
-                var now = DateTimeOffset.UtcNow;
-                // Get Unix timestamp for Friday of the current week
-                var friday = now.AddDays(-(int)now.DayOfWeek + (int)DayOfWeek.Friday);
-                period2 = friday.ToUnixTimeSeconds();
+                // Check if today is a weekend (Saturday or Sunday)
+                if (today.DayOfWeek == DayOfWeek.Saturday)
+                {
+                    // Calculate previous Monday (5 days ago)
+                    monday = today.AddDays(-5);
+
+                    // Calculate previous Friday (1 days ago)
+                    friday = today.AddDays(-1);
+                }
+                else if (today.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    // Calculate previous Monday (6 days ago)
+                    monday = today.AddDays(-6);
+
+                    // Calculate previous Friday (2 days ago)
+                    friday = today.AddDays(-2);
+                }
+                else
+                {
+                    // Calculate current Monday
+                    monday = today.AddDays(-(int)today.DayOfWeek + 1);
+
+                    // Calculate current Friday
+                    friday = today.AddDays(5 - (int)today.DayOfWeek);
+                }
+
+                // Convert to Unix timestamps
+                period1 = (long)(monday - new DateTime(1970, 1, 1)).TotalSeconds;
+                period2 = (long)(friday - new DateTime(1970, 1, 1)).TotalSeconds;
             }
 
             try
