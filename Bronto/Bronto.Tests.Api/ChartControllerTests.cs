@@ -1,8 +1,9 @@
 ﻿using Bronto.Models;
 using Bronto.WebApi.Controllers;
-using Bronto.WebApi.Interfaces;
+using Bronto.WebApi.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 
 namespace Bronto.Tests.Api
@@ -10,7 +11,9 @@ namespace Bronto.Tests.Api
     public class ChartControllerTests
     {
         private readonly IConfiguration _testConfiguration;
+        private readonly IMemoryCache _cache;
         private readonly ChartController _chartController;
+        private readonly ChartService _chartService;
 
         public ChartControllerTests()
         {
@@ -18,15 +21,16 @@ namespace Bronto.Tests.Api
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            _chartController = new ChartController(_testConfiguration);
+            _cache = new MemoryCache(new MemoryCacheOptions());
+            _chartService = new ChartService(_testConfiguration, _cache);
+            _chartController = new ChartController(_testConfiguration, _cache, _chartService);
         }
 
-        [Fact]
-        public async Task GetStockDataAsync_ShouldReturnOhlcList()
+        [Theory]
+        [InlineData("AAPL")]
+        [InlineData("NVDA")]
+        public async Task GetStockDataAsync_ShouldReturnOhlcList(string symbol)
         {
-            // Arrange: Set up context
-            var symbol = "AAPL";
-
             // Act: Call the Get method
             var result = await _chartController.GetStockData(symbol);
 
