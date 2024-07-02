@@ -3,6 +3,7 @@ using Bronto.Models.Api.Chart;
 using Bronto.WebApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 using System.Text.Json;
 
 namespace Bronto.WebApi.Services
@@ -48,7 +49,7 @@ namespace Bronto.WebApi.Services
                     .SetSize(1024);
 
                     if (response.IsSuccessStatusCode)
-                    {   
+                    {
                         // Parse the response and create a Chart object
                         var data = await response.Content.ReadAsStringAsync();
                         ohlcList = ParseJsonToOHLC(data);
@@ -56,8 +57,13 @@ namespace Bronto.WebApi.Services
                         // Cache the data for future requests
                         _cache.Set(symbol, ohlcList, cacheEntryOptions);
                     }
-                    else
+                    else if (response.StatusCode == HttpStatusCode.NotFound)
                     {
+                        // Returns a 404 Not Found response
+                        return null;
+                    }
+                    else
+                            {
                         // Handle non-success status codes (e.g., log, throw exception, etc.)
                         throw new Exception($"HTTP request failed with status code {response.StatusCode}");
                     }

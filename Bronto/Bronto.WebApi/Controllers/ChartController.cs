@@ -10,9 +10,9 @@ namespace Bronto.WebApi.Controllers
     public class ChartController : ControllerBase
     {
         private IConfiguration _config { get; set; }
-
-        private readonly ChartService _chartService;
         private readonly IMemoryCache _cache;
+        private readonly ChartService _chartService;
+        private List<MyOHLC>? _response;
 
         public ChartController(IConfiguration iConfig, IMemoryCache cache, ChartService chartService)
         {
@@ -33,35 +33,8 @@ namespace Bronto.WebApi.Controllers
             // Calculate default period1 and period2 if not provided
             if (!period1.HasValue || !period2.HasValue)
             {
-                DateTime today = DateTime.Today;
-                DateTime monday;
-                DateTime friday;
-
-                // Check if today is a weekend (Saturday or Sunday)
-                if (today.DayOfWeek == DayOfWeek.Saturday)
-                {
-                    // Calculate previous Monday (5 days ago)
-                    monday = today.AddDays(-5);
-
-                    // Calculate previous Friday (1 days ago)
-                    friday = today.AddDays(-1);
-                }
-                else if (today.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    // Calculate previous Monday (6 days ago)
-                    monday = today.AddDays(-6);
-
-                    // Calculate previous Friday (2 days ago)
-                    friday = today.AddDays(-2);
-                }
-                else
-                {
-                    // Calculate current Monday
-                    monday = today.AddDays(-(int)today.DayOfWeek + 1);
-
-                    // Calculate current Friday
-                    friday = today.AddDays(5 - (int)today.DayOfWeek);
-                }
+                DateTime monday, friday;
+                CalculateStartEnd(out monday, out friday);
 
                 // Convert to Unix timestamps
                 period1 = (long)(monday - new DateTime(1970, 1, 1)).TotalSeconds;
@@ -70,13 +43,48 @@ namespace Bronto.WebApi.Controllers
 
             try
             {
-                var response = await _chartService.GetStockData(symbol, interval, range, period1, period2);
-                return Ok(response);
+                _response = await _chartService.GetStockData(symbol, interval, range, period1, period2);
+                if (_response == null) {
+                    // 404 Not Found - No Resource 
+                    return NotFound();
+                }
+                return Ok(_response);
             }
             catch (HttpRequestException)
             {
                 // Handle exceptions (e.g., network issues)
-                return StatusCode(500); // Internal Server Error
+                return StatusCode(500); // 500 Internal Server Error
+            }
+        }
+
+        private static void CalculateStartEnd(out DateTime monday, out DateTime friday)
+        {
+            DateTime today = DateTime.Today;
+
+            // Check if today is a weekend (Saturday or Sunday)
+            if (today.DayOfWeek == DayOfWeek.Saturday)
+            {
+                // Calculate previous Monday (5 days ago)
+                monday = today.AddDays(-5);
+
+                // Calculate previous Friday (1 days ago)
+                friday = today.AddDays(-1);
+            }
+            else if (today.DayOfWeek == DayOfWeek.Sunday)
+            {
+                // Calculate previous Monday (6 days ago)
+                monday = today.AddDays(-6);
+
+                // Calculate previous Friday (2 days ago)
+                friday = today.AddDays(-2);
+            }
+            else
+            {
+                // Calculate current Monday
+                monday = today.AddDays(-(int)today.DayOfWeek + 1);
+
+                // Calculate current Friday
+                friday = today.AddDays(5 - (int)today.DayOfWeek);
             }
         }
     }
