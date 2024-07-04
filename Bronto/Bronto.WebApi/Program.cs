@@ -1,7 +1,9 @@
+using Bronto.WebApi.Interfaces;
+using Bronto.WebApi.Services;
 using System.Globalization;
 using System.Threading.RateLimiting;
 
-var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
 string[] origins = new string[]
 {
@@ -13,8 +15,10 @@ string[] origins = new string[]
 };
 
 // Add services to the container.
-
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,10 +62,10 @@ builder.Services.AddRateLimiter(_ =>
         }),
         PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         {
-            var clientIP = httpContext.Connection.RemoteIpAddress!.ToString();
+            var userAgent = httpContext.Request.Headers.UserAgent.ToString();
 
             return RateLimitPartition.GetFixedWindowLimiter
-            (clientIP, _ =>
+            (userAgent, _ =>
                 new FixedWindowRateLimiterOptions
                 {
                     AutoReplenishment = true,
@@ -91,3 +95,8 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+    // Your top-level statements...
+}
