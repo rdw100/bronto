@@ -1,5 +1,6 @@
 ﻿using Bronto.Models;
 using Bronto.WebApi.Controllers;
+using Bronto.WebApi.Interfaces;
 using Bronto.WebApi.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,8 @@ namespace Bronto.Tests.Api
     {
         private readonly IConfiguration _testConfiguration;
         private readonly IMemoryCache _cache;
+        private readonly IChartService _chartService;
         private readonly ChartController _chartController;
-        private readonly ChartService _chartService;
 
         public ChartControllerTests()
         {

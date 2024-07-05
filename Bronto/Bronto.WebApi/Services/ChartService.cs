@@ -11,9 +11,9 @@ namespace Bronto.WebApi.Services
     public class ChartService : IChartService
     {
         private readonly IMemoryCache _cache;
-        private readonly HttpClient _httpClient;
         private IConfiguration _config { get; set; }
-        protected internal string _baseUrl { get; set; }
+        private readonly HttpClient _httpClient;
+        protected internal string? _baseUrl { get; set; }
 
         public ChartService(IConfiguration iConfig, IMemoryCache cache)
         {
@@ -75,6 +75,69 @@ namespace Bronto.WebApi.Services
             {
                 throw new Exception($"Error fetching stock data: {ex.Message}");
             }
+        }
+
+        [HttpGet]
+        public async Task<ChartResult> GetChartData(
+            string symbol,
+            string interval = "1d", // Default interval is 1 day
+            string range = "5d",   // Default range is 5 days
+            long? period1 = null,  // Default period1 is null (to be calculated)
+            long? period2 = null)  // Default period2 is null (to be calculated)
+        {
+            // Construct the API URL//{_baseUrl}
+            var apiUrl = $"{symbol}?interval={interval}&range={range}&period1={period1}&period2={period2}";
+
+            try
+            {
+                if (!_cache.TryGetValue(symbol, out ChartResult chart))
+                {
+                    var response = await _httpClient.GetAsync(apiUrl);
+
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(120))
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                    .SetPriority(CacheItemPriority.Normal)
+                    .SetSize(1024);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Parse the response and create a Chart object
+                        var data = await response.Content.ReadAsStringAsync();
+                        chart = ParseJsonToChart(data);
+
+                        // Cache the data for future requests
+                        _cache.Set(symbol, chart, cacheEntryOptions);
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // Returns a 404 Not Found response
+                        return null;
+                    }
+                    else
+                    {
+                        // Handle non-success status codes (e.g., log, throw exception, etc.)
+                        throw new Exception($"HTTP request failed with status code {response.StatusCode}");
+                    }
+                }
+
+                return chart;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error fetching stock data: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Parses the JSON response into an ChartResult List
+        /// </summary>
+        /// <param name="jsonResponse"></param>
+        /// <returns></returns>
+        private ChartResult ParseJsonToChart(string jsonResponse)
+        {
+            var parsedData = JsonSerializer.Deserialize<ChartResult>(jsonResponse);
+            return parsedData;
         }
 
         /// <summary>
