@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
-    public partial class ChartResult
+    public class ChartResult : BaseResponse
     {
         [JsonPropertyName("chart")]
         public Chart Chart { get; set; }

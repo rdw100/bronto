@@ -8,7 +8,6 @@ namespace Bronto.Stocks.Pwa.Services
     public class PriceService : IPriceService
     {
         private readonly HttpClient _httpClient;
-        private RealTimePrice price;
 
         public List<string> Symbols { get; } = new()
         {
