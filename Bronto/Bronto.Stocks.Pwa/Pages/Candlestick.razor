@@ -2,6 +2,7 @@
 @using AutoMapper
 @using Bronto.Models
 @using Bronto.Models.Api
+@using Bronto.Models.Api.Chart
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
@@ -42,22 +43,20 @@
 {
     <p><span style="color: red;">@errorMessage</span></p>
 }
-else if (StockDataList is null)
+else if (ChartDataList is null)
 {
     <p>Populating ...</p>
 }
-else if (!StockDataList.Any())
+else if (!ChartDataList.Chart.Result.Any())
 {
     <p>Loading ...</p>
 }
 else
 {
-    <p>Symbol: @_selectedStockSymbol</p>
-    @*
-        <p>Symbol: @StockDataList.Symbol</p>
-        <p>Interval: @StockDataList.Interval</p>
-        <p>Updated: @StockDataList.Values[0].Datetime</p>
-    *@
+    <p>Symbol: @_selectedStockSymbol</p>    
+    <p>Symbol: @ChartDataList.Chart.Result[0].Meta.Symbol</p>
+    <p>Interval: @ChartDataList.Chart.Result[0].Meta.Range</p>
+    <p>Updated: @UnixTimeStampToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
     <p><button @onclick="()=>Clear()">Clear</button></p>
 }
 
@@ -95,8 +94,7 @@ else
 @code {
     private bool loadFailed;
     private string errorMessage;
-    //private StockDataTimeSeries StockDataList { get; set; }
-    private List<MyOHLC> StockDataList { get; set; }
+    private ChartResult ChartDataList { get; set; }
     private List<OHLC> prices { get; set; }
     public DesignThemeModes Mode { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
@@ -156,20 +154,28 @@ else
 
     protected async Task<List<OHLC>> GetStocks(string symbol)
     {
-        StockDataList = await chartService.GetStockData(symbol);
-        // StockDataList = await stockService.GetTimeSeriesAsync(symbol, "1day", "30");
+        ChartDataList = await chartService.GetChartData(symbol);
 
-        @if (StockDataList != null && StockDataList[0].ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
+        @if (ChartDataList != null && ChartDataList.ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
         {
-            // Use AutoMapper mapping ScottPlot's OHLC
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<MyOHLC, OHLC>());
-            var mapper = config.CreateMapper();
-            prices = mapper.Map<List<OHLC>>(StockDataList.ToList());
+            List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
+                .Select((open, index) => new OHLC
+                    {
+                        Open = open,
+                        High = ChartDataList.Chart.Result[0].Indicators.Quote[0].High[index],
+                        Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
+                        Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
+                        DateTime = UnixTimeStampToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
+                        TimeSpan = TimeSpan.FromDays(1.0)
+                    })
+                .ToList();
+
+            prices = ohlcList; 
         }
-        else if (StockDataList[0].ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+        else if (ChartDataList.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
         {
             loadFailed = true;
-            errorMessage = $"Error: {StockDataList[0].ResponseStatus} {StockDataList[0].ResponseMessage}";
+            errorMessage = $"Error: {ChartDataList.ResponseStatus} {ChartDataList.ResponseMessage}";
             prices = null;
             StateHasChanged();
         }
@@ -181,5 +187,13 @@ else
     {
         BlazorPlot.Plot.Clear();
         StateHasChanged();
+    }
+
+    public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+    {
+        // Unix timestamp is seconds past epoch (January 1, 1970)
+        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        DateTime dateTime = epoch.AddSeconds(unixTimeStamp).ToLocalTime();
+        return dateTime;
     }
 }
