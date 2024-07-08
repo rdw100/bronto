@@ -1,4 +1,4 @@
-﻿using Bronto.WebApi.Framework;
+﻿using Bronto.Shared;
 
 namespace Bronto.Tests.Api
 {

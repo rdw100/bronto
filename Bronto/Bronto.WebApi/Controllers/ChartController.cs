@@ -1,6 +1,6 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
-using Bronto.WebApi.Framework;
+using Bronto.Shared;
 using Bronto.WebApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
