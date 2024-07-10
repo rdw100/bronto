@@ -7,16 +7,20 @@
     /// </summary>
     public class UnixTimestampCalculator
     {
+        protected readonly DateTime day;
+
         public long MondayUnixTime { get; private set; }
         public long FridayUnixTime { get; private set; }
+        
+        public UnixTimestampCalculator() {}
 
-        public UnixTimestampCalculator()
-        {
-                
-        }
-
+        /// <summary>
+        /// Calculates nearest Monday and Friday.
+        /// </summary>
+        /// <param name="dateTime">A date and time of day.</param>
         public UnixTimestampCalculator(DateTime dateTime)
         {
+            day = dateTime;
             MondayUnixTime = GetMondayUnixTimestamp(dateTime);
             FridayUnixTime = GetFridayUnixTimestamp(dateTime);
         }
@@ -29,7 +33,6 @@
         public long GetMondayUnixTimestamp(DateTime dateTime)
         {
             // Find the most recent Monday (or today if it's Monday)
-            //DateTime monday = dateTime.AddDays(-(int)dateTime.DayOfWeek + (int)DayOfWeek.Monday);
             DateTime monday = GetMostRecentMonday(dateTime);
 
             // Convert to Unix timestamp
@@ -45,7 +48,6 @@
         public long GetFridayUnixTimestamp(DateTime dateTime)
         {
             // Find the most recent Monday (or today if it's Monday)
-            //DateTime monday = dateTime.AddDays(-(int)dateTime.DayOfWeek + (int)DayOfWeek.Monday);
             DateTime monday = GetMostRecentMonday(dateTime);
 
             // Calculate the Unix timestamp for Friday (5 days after Monday)
@@ -56,6 +58,11 @@
             return ToUnixTime(friday);
         }
 
+        /// <summary>
+        /// Calculates recent Monday.
+        /// </summary>
+        /// <param name="currentDate"></param>
+        /// <returns></returns>
         private DateTime GetMostRecentMonday(DateTime currentDate)
         {
             int daysToSubtract = (int)currentDate.DayOfWeek - (int)DayOfWeek.Monday;
@@ -66,14 +73,26 @@
             return currentDate.Date.AddDays(-daysToSubtract);
         }
 
+        /// <summary>
+        /// Calculates Unix timestamp in seconds past epoch from DateTime.
+        /// </summary>
+        /// <param name="dateTime">DateTime as Date and Time of day.</param>
+        /// <returns>Returns Unix timestamp in seconds past epoch</returns>
         public static long ToUnixTime(DateTime dateTime)
         {
             return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
         }
 
-        public static DateTime FromUnixTime(long unixTime)
+        /// <summary>
+        /// Calculates DateTime from Unix timestamp in seconds past epoch.
+        /// </summary>
+        /// <param name="unixTime">Unix timestamp</param>
+        /// <returns>Returns DateTime from Unix timestamp in seconds past epoch</returns>
+        public static DateTime ToDateTime(long unixTime)
         {
-            return DateTimeOffset.FromUnixTimeSeconds(unixTime).UtcDateTime;
+            DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime dateTime = epoch.AddSeconds(unixTime).ToLocalTime();
+            return dateTime;
         }
     }
 }

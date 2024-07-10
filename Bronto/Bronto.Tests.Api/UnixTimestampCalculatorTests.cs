@@ -27,6 +27,20 @@ namespace Bronto.Tests.Api
         }
 
         [Fact]
+        public void GetFridayUnixTimestamp_CurrentWeekMonday_ReturnsMondayTimestamp()
+        {
+            // Arrange: Set the current date to a Monday
+            DateTime monday = new DateTime(2024, 7, 15); // Adjust as needed
+            long expectedFridayTimestamp = 1721361600; // Monday, July 15, 2024 12:00:00 AM GMT-04:00 DST
+
+            // Act
+            long timestamp = _calculator.GetFridayUnixTimestamp(monday);
+
+            // Assert: Verify the expected Unix timestamp
+            Assert.Equal(expectedFridayTimestamp, timestamp);
+        }
+
+            [Fact]
         public void GetMondayUnixTimestamp_CurrentSunday_ReturnsMondayTimestamp()
         {
             // Arrange: Set the current date to a Sunday

@@ -93,10 +93,10 @@ namespace Bronto.WebApi.Controllers
         private static void CalculateStartEnd(out long? period1, out long? period2)
         {
             DateTime today = DateTime.UtcNow;
-            var calculator = new UnixTimestampCalculator();
+            var calculator = new UnixTimestampCalculator(today);
 
-            period1 = calculator.GetMondayUnixTimestamp(today);
-            period2 = calculator.GetFridayUnixTimestamp(today);
+            period1 = calculator.MondayUnixTime;
+            period2 = calculator.FridayUnixTime;
         }
     }
 }
