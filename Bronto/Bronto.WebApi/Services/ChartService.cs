@@ -1,6 +1,7 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
-using Bronto.WebApi.Interfaces;
+using Bronto.WebApi.Services.Http;
+using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
@@ -11,11 +12,12 @@ namespace Bronto.WebApi.Services
     public class ChartService : IChartService
     {
         private readonly IMemoryCache _cache;
+        private readonly IHttpService HttpService;
         private IConfiguration _config { get; set; }
         private readonly HttpClient _httpClient;
         protected internal string? _baseUrl { get; set; }
 
-        public ChartService(IConfiguration iConfig, IMemoryCache cache)
+        public ChartService(IConfiguration iConfig, IMemoryCache cache, IHttpService httpService)
         {
             _config = iConfig;
             _cache = cache;
@@ -23,6 +25,7 @@ namespace Bronto.WebApi.Services
             _httpClient = new HttpClient();
             _httpClient.BaseAddress = new Uri($"https://{_baseUrl}/");
             _httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
+            HttpService = httpService;
         }
 
         [HttpGet]
@@ -40,7 +43,8 @@ namespace Bronto.WebApi.Services
             {
                 if (!_cache.TryGetValue(symbol, out List<MyOHLC> ohlcList))
                 {                    
-                    var response = await _httpClient.GetAsync(apiUrl);
+                    //var response = await _httpClient.GetAsync(apiUrl);
+                    var response = await HttpService.GetAsync<HttpResponseMessage>(apiUrl);
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromSeconds(120))
@@ -87,10 +91,11 @@ namespace Bronto.WebApi.Services
         {
             // Construct the API URL//{_baseUrl}
             var apiUrl = $"{symbol}?interval={interval}&range={range}&period1={period1}&period2={period2}";
+            var cacheKey = symbol + interval + range;
 
             try
             {
-                if (!_cache.TryGetValue(symbol, out ChartResult chart))
+                if (!_cache.TryGetValue(cacheKey, out ChartResult chart))
                 {
                     var response = await _httpClient.GetAsync(apiUrl);
 
@@ -107,7 +112,7 @@ namespace Bronto.WebApi.Services
                         chart = ParseJsonToChart(data);
 
                         // Cache the data for future requests
-                        _cache.Set(symbol, chart, cacheEntryOptions);
+                        _cache.Set(cacheKey, chart, cacheEntryOptions);
                     }
                     else if (response.StatusCode == HttpStatusCode.NotFound)
                     {

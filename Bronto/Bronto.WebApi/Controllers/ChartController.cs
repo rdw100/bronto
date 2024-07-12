@@ -1,7 +1,7 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
 using Bronto.Shared;
-using Bronto.WebApi.Interfaces;
+using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -14,7 +14,6 @@ namespace Bronto.WebApi.Controllers
         private IConfiguration _config { get; set; }
         private readonly IMemoryCache _cache;
         private readonly IChartService _chartService;
-
 
         public ChartController(IConfiguration iConfig, IMemoryCache cache, IChartService chartService)
         {
@@ -67,7 +66,7 @@ namespace Bronto.WebApi.Controllers
             if (!period1.HasValue || !period2.HasValue)
             {
                 CalculateStartEnd(out period1, out period2);
-            }            
+            }
             
             // Retrieve stock by symbol
             try

@@ -1,7 +1,7 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
 
-namespace Bronto.WebApi.Interfaces
+namespace Bronto.WebApi.Services.Interfaces
 {
     public interface IChartService
     {
