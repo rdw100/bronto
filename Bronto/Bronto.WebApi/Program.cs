@@ -1,9 +1,10 @@
-using Bronto.WebApi.Interfaces;
 using Bronto.WebApi.Services;
+using Bronto.WebApi.Services.Http;
+using Bronto.WebApi.Services.Interfaces;
 using System.Globalization;
 using System.Threading.RateLimiting;
 
-    var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 string[] origins = new string[]
 {
@@ -16,6 +17,8 @@ string[] origins = new string[]
 
 // Add services to the container.
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IHttpService, HttpService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddControllers();
 
