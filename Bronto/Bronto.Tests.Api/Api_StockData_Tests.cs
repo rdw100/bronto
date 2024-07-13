@@ -59,7 +59,7 @@ namespace Bronto.Tests.Api
             client.BaseAddress = new Uri("https://localhost:7048/");
 
             // Act
-            var response = await client.GetAsync($"/stock/Chart?symbol={symbol}&interval=1d&range=5d");
+            var response = await client.GetAsync($"/api/Chart?symbol={symbol}&interval=1d&range=5d");
 
             // Assert
             var content = await response.Content.ReadAsStringAsync();

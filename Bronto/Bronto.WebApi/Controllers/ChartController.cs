@@ -1,5 +1,4 @@
-﻿using Bronto.Models;
-using Bronto.Models.Api.Chart;
+﻿using Bronto.Models.Api.Chart;
 using Bronto.Shared;
 using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -22,39 +21,8 @@ namespace Bronto.WebApi.Controllers
             _chartService = chartService;
         }
 
-        // GET api/<ChartController>/AAPL
+        // GET: api/Chart/{symbol}
         [HttpGet]
-        public async Task<ActionResult<List<MyOHLC>>> GetStockData(
-            [FromQuery] string symbol,
-            [FromQuery] string interval = "1d", // Default interval is 1 day
-            [FromQuery] string range = "5d",   // Default range is 5 days
-            [FromQuery] long? period1 = null,  // Default period1 is null (to be calculated)
-            [FromQuery] long? period2 = null)  // Default period2 is null (to be calculated)
-        {
-            // Calculate default period1 and period2 if not provided
-            if (!period1.HasValue || !period2.HasValue)
-            {
-                CalculateStartEnd(out period1, out period2);
-            }
-
-            try
-            {
-                var _response = await _chartService.GetStockData(symbol, interval, range, period1, period2);
-                if (_response == null) {
-                    // 404 Not Found - No Resource 
-                    return NotFound();
-                }
-                return Ok(_response);
-            }
-            catch (HttpRequestException)
-            {
-                // Handle exceptions (e.g., network issues)
-                return StatusCode(500); // 500 Internal Server Error
-            }
-        }
-
-        // GET: api/stock/Chart/{symbol}
-        [HttpGet("/stock/{symbol}")]
         public async Task<ActionResult<ChartResult>> GetChartData(
             [FromQuery] string symbol,
             [FromQuery] string interval = "1d", // Default interval is 1 day

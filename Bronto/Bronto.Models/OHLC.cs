@@ -1,6 +1,4 @@
-﻿using Bronto.Models.Api;
-
-namespace Bronto.Models
+﻿namespace Bronto.Models
 {
     public class MyOHLC : BaseResponse
     {
@@ -51,7 +49,7 @@ namespace Bronto.Models
 
     public class BaseResponse
     {
-        public Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
+        public Api.Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
         public string ResponseMessage { get; set; } = "RESPONSE_OK";
     }
 }

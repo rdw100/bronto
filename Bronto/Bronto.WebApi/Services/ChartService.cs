@@ -29,59 +29,6 @@ namespace Bronto.WebApi.Services
         }
 
         [HttpGet]
-        public async Task<List<MyOHLC>> GetStockData(       
-            string symbol,
-            string interval = "1d", // Default interval is 1 day
-            string range = "5d",   // Default range is 5 days
-            long? period1 = null,  // Default period1 is null (to be calculated)
-            long? period2 = null)  // Default period2 is null (to be calculated)
-        {
-            // Construct the API URL//{_baseUrl}
-            var apiUrl = $"{symbol}?interval={interval}&range={range}&period1={period1}&period2={period2}";
-
-            try
-            {
-                if (!_cache.TryGetValue(symbol, out List<MyOHLC> ohlcList))
-                {                    
-                    //var response = await _httpClient.GetAsync(apiUrl);
-                    var response = await HttpService.GetAsync<HttpResponseMessage>(apiUrl);
-
-                    var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(120))
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-                    .SetPriority(CacheItemPriority.Normal)
-                    .SetSize(1024);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // Parse the response and create a Chart object
-                        var data = await response.Content.ReadAsStringAsync();
-                        ohlcList = ParseJsonToOHLC(data);
-
-                        // Cache the data for future requests
-                        _cache.Set(symbol, ohlcList, cacheEntryOptions);
-                    }
-                    else if (response.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        // Returns a 404 Not Found response
-                        return null;
-                    }
-                    else
-                            {
-                        // Handle non-success status codes (e.g., log, throw exception, etc.)
-                        throw new Exception($"HTTP request failed with status code {response.StatusCode}");
-                    }
-                }
-
-                return ohlcList;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception($"Error fetching stock data: {ex.Message}");
-            }
-        }
-
-        [HttpGet]
         public async Task<ChartResult> GetChartData(
             string symbol,
             string interval = "1d", // Default interval is 1 day

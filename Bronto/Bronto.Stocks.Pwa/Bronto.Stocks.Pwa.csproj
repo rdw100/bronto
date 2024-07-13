@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bronto.Models\Bronto.Models.csproj" />
+    <ProjectReference Include="..\Bronto.Shared\Bronto.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,8 @@
-﻿using Bronto.Models;
+﻿using Bronto.Models.Api.Chart;
 using Bronto.WebApi.Controllers;
-using Bronto.WebApi.Interfaces;
 using Bronto.WebApi.Services;
+using Bronto.WebApi.Services.Http;
+using Bronto.WebApi.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,6 +13,7 @@ namespace Bronto.Tests.Api
     public class ChartControllerTests
     {
         private readonly IConfiguration _testConfiguration;
+        private readonly IHttpService _httpService;
         private readonly IMemoryCache _cache;
         private readonly IChartService _chartService;
         private readonly ChartController _chartController;
@@ -23,29 +25,29 @@ namespace Bronto.Tests.Api
                 .AddJsonFile("appsettings.json")
                 .Build();
             _cache = new MemoryCache(new MemoryCacheOptions());
-            _chartService = new ChartService(_testConfiguration, _cache);
+            _chartService = new ChartService(_testConfiguration, _cache, _httpService);
             _chartController = new ChartController(_testConfiguration, _cache, _chartService);
         }
 
         [Theory]
         [InlineData("AAPL")]
         [InlineData("NVDA")]
-        public async Task GetStockDataAsync_ShouldReturnOhlcList(string symbol)
+        public async Task GetStockDataAsync_ShouldReturnChartResult(string symbol)
         {
             // Act: Call the Get method
-            var result = await _chartController.GetStockData(symbol);
+            var result = await _chartController.GetChartData(symbol);
 
             // Assert: Verify the result
             Assert.NotNull(result);
 
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var ohlcList = Assert.IsType<List<MyOHLC>>(okResult.Value);
+            var ohlcList = Assert.IsType<ChartResult>(okResult.Value);
 
-            ohlcList.Count.Should().BePositive();
-            ohlcList[0].Open.Should().BePositive();
-            ohlcList[0].High.Should().BePositive();
-            ohlcList[0].Low.Should().BePositive();
-            ohlcList[0].Close.Should().BePositive();
+            ohlcList.Chart.Result[0].Indicators.Quote.Count.Should().BePositive();
+            ohlcList.Chart.Result[0].Indicators.Quote[0].Open[0].Should().BePositive();
+            ohlcList.Chart.Result[0].Indicators.Quote[0].High[0].Should().BePositive();
+            ohlcList.Chart.Result[0].Indicators.Quote[0].Low[0].Should().BePositive();
+            ohlcList.Chart.Result[0].Indicators.Quote[0].Close[0].Should().BePositive();
         }
     }
 }
