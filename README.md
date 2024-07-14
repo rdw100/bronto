@@ -1,4 +1,4 @@
-# bronto
+﻿# bronto
 :sauropod:Bronto is a Progressive Web Application (PWA) that accesses stock market data using .NET 8 and Blazor.
 
 ```mermaid
@@ -19,3 +19,28 @@ flowchart TD
     style API_Provider stroke:Red,stroke-width:4px
 
 ```
+
+    Solution
+    .
+    ├── Presentation API               <- The project api.
+    │   └── Controllers
+    │       └── StockController.cs
+    │   
+    ├── Application                    <- All project services.
+    │   └── Services
+    │       └── StockServices.cs
+    │
+    ├── Infrastucture                  <- All project infrastructure.
+    │   ├── Repositories
+    │   ├── HttpClients
+    │   └── Caching
+    │
+    ├── Models
+    │   └── Stock.cs
+    │
+    ├── Presentation PWA               <- The project UI.
+    │   └── Pages
+    │       └── Stock.cs
+    │
+    ├── Shared
+    │   └── Calculator.cs
