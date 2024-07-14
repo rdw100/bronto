@@ -2,10 +2,12 @@
 using Bronto.Shared;
 using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Bronto.WebApi.Controllers
 {
+    [DisableRateLimiting]
     [Route("api/[controller]")]
     [ApiController]
     public class ChartController : ControllerBase
