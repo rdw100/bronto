@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bronto.Shared\Bronto.Shared.csproj" />
+    <ProjectReference Include="..\Bronto.WebApi.Services\Bronto.WebApi.Services.csproj" />
     <ProjectReference Include="..\Bronto.WebApi\Bronto.WebApi.csproj" />
   </ItemGroup>
 

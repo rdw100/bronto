@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Stocks.Pwa", "Bronto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Tests.RateLimit", "Bronto.Tests.RateLimit\Bronto.Tests.RateLimit.csproj", "{DFCE9A09-254D-4325-AC9B-B0C25A90FB2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bronto.Shared", "Bronto.Shared\Bronto.Shared.csproj", "{C4FBFE44-CC8C-4069-98E3-4BA075282669}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Shared", "Bronto.Shared\Bronto.Shared.csproj", "{C4FBFE44-CC8C-4069-98E3-4BA075282669}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bronto.WebApi.Services", "Bronto.WebApi.Services\Bronto.WebApi.Services.csproj", "{F84CE011-9321-4CF1-B755-164E0A181DF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{C4FBFE44-CC8C-4069-98E3-4BA075282669}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4FBFE44-CC8C-4069-98E3-4BA075282669}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4FBFE44-CC8C-4069-98E3-4BA075282669}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F84CE011-9321-4CF1-B755-164E0A181DF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F84CE011-9321-4CF1-B755-164E0A181DF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F84CE011-9321-4CF1-B755-164E0A181DF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F84CE011-9321-4CF1-B755-164E0A181DF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

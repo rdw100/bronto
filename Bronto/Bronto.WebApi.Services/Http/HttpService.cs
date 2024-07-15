@@ -1,4 +1,7 @@
-﻿namespace Bronto.WebApi.Services.Http
+﻿using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
+
+namespace Bronto.WebApi.Services.Http
 {
     public class HttpService : IHttpService
     {
