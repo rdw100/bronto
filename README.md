@@ -21,26 +21,34 @@ flowchart TD
 ```
 
     Solution
-    .
-    ├── Presentation API               <- The project api.
-    │   └── Controllers
-    │       └── StockController.cs
-    │   
-    ├── Application                    <- All project services.
-    │   └── Services
-    │       └── StockServices.cs
-    │
-    ├── Infrastucture                  <- All project infrastructure.
-    │   ├── Repositories
-    │   ├── HttpClients
-    │   └── Caching
-    │
-    ├── Models
-    │   └── Stock.cs
-    │
-    ├── Presentation PWA               <- The project UI.
+    │     
+    ├── Presentation PWA               <- The project UI logic.
     │   └── Pages
     │       └── Stock.cs
     │
-    ├── Shared
-    │   └── Calculator.cs
+    ├── Presentation API               <- The project API logic.
+    │   └── Controllers
+    │       └── StockController.cs
+    │
+    ├── Application                    <- The project services (use cases/features).
+    │   └── Services
+    │       └── StockServices.cs
+    │
+    ├── Domain                         <- The project business logic.
+    │   ├── Entities/Models
+    │   │   └── Stock.cs
+    │   ├── Interfaces
+    │   └── Shared
+    │
+    ├── Infrastucture                  <- The project infrastructure.
+    │   ├── Data
+    │   │   └── StockData.cs
+    │   ├── HttpClients
+    │   │   └── StockCient.cs
+    │   └── Caching
+    │
+    ├── Tests             	           <- The project Unit tests for each layer.
+    │   ├── ApplicationTests
+    │   ├── DomainTests
+    │   └── InfrastructureTests    
+    │
