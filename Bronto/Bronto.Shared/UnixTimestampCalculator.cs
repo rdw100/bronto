@@ -11,8 +11,8 @@
 
         public long MondayUnixTime { get; private set; }
         public long FridayUnixTime { get; private set; }
-        
-        public UnixTimestampCalculator() {}
+
+        public UnixTimestampCalculator() { }
 
         /// <summary>
         /// Calculates nearest Monday and Friday.

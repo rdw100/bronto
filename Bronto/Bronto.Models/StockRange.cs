@@ -1,4 +1,6 @@
-﻿namespace Bronto.Models.Enums
+﻿using System.Reflection;
+
+namespace Bronto.Models.Enums
 {
     /// <summary>
     /// Allows string attributes to be applied
@@ -6,11 +8,11 @@
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public sealed class StringValueAttribute : Attribute
     {
-        public string Value { get; }
+        public string StringValue { get; }
 
         public StringValueAttribute(string value)
         {
-            Value = value;
+            StringValue = value;
         }
     }
 
@@ -48,13 +50,15 @@
     /// </summary>
     public static class EnumExtensions
     {
-        public static string GetStringValue(this Enum value)
+        public static string? GetStringValue(this Enum value)
         {
-            var fieldInfo = value.GetType().GetField(value.ToString());
-            var attribute = fieldInfo?.GetCustomAttributes(typeof(StringValueAttribute), false)
-                .FirstOrDefault() as StringValueAttribute;
+            FieldInfo? field = value.GetType().GetField(value.ToString());
+            if (field == null) return null;
 
-            return attribute?.Value;
+            StringValueAttribute? attribute = field.GetCustomAttributes(typeof(StringValueAttribute), false)
+                                                  .FirstOrDefault() as StringValueAttribute;
+
+            return attribute?.StringValue;
         }
     }
 }
