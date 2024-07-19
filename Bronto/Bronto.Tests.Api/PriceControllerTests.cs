@@ -1,7 +1,11 @@
 ﻿using Bronto.Models.Api;
 using Bronto.WebApi.Controllers;
+using Bronto.WebApi.Services;
+using Bronto.WebApi.Services.Http;
+using Bronto.WebApi.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using static Bronto.Models.Api.Enums;
 
@@ -9,16 +13,22 @@ namespace Bronto.Tests.Api
 {
     public class PriceControllerTests
     {
-        private readonly IConfiguration _testConfiguration;
-        private readonly PriceController _priceController;
+        private readonly IConfiguration testConfiguration;
+        private readonly PriceController priceController;
+        private readonly IPriceService priceService;
+        private readonly IMemoryCache iCache;
+        private readonly ITwelveHttpService iTwelveHttpService;
 
         public PriceControllerTests()
         {
-            _testConfiguration = new ConfigurationBuilder()
+            testConfiguration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            _priceController = new PriceController(_testConfiguration);
+            iCache = new MemoryCache(new MemoryCacheOptions());
+            iTwelveHttpService = new TwelveHttpService(new HttpClient(), testConfiguration);
+            priceService = new PriceService(testConfiguration, iCache, iTwelveHttpService);
+            priceController = new PriceController(testConfiguration, iCache, priceService);
         }
 
         [Fact]
@@ -28,7 +38,7 @@ namespace Bronto.Tests.Api
             var symbol = "AAPL";
 
             // Act: Call the Get method
-            var result = await _priceController.Get(symbol);
+            var result = await priceController.Get(symbol);
 
             // Assert: Verify the result
             Assert.NotNull(result);

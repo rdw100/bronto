@@ -1,5 +1,6 @@
-﻿using Bronto.Models.Api;
+﻿using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Bronto.WebApi.Controllers
 {
@@ -7,55 +8,43 @@ namespace Bronto.WebApi.Controllers
     [ApiController]
     public class PriceController : ControllerBase
     {
-        private readonly HttpClient _httpClient;
-
+        private readonly IPriceService priceService;
         private IConfiguration config { get; set; }
-
+        private readonly IMemoryCache cache;
         protected internal string Key { get; set; }
         protected internal string Host { get; set; }
 
-        public PriceController(IConfiguration iConfig)
+        public PriceController(IConfiguration iConfig, IMemoryCache iCache, IPriceService iPriceService)
         {
             config = iConfig;
+            cache = iCache;
             Key = config.GetSection("AppSettings")["Key"];
             Host = config.GetSection("AppSettings")["Host"];
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri($"https://{Host}/");
+            priceService = iPriceService;
         }
 
-        // GET api/<PriceController>/5
         [HttpGet]
         public async Task<IActionResult> Get(string symbol)
-        {       
+        {
+            // Retrieve stock by symbol
             try
             {
-                // Replace with the actual API endpoint for stock data
-                string apiUrl = $"price?symbol={symbol}&apikey={Key}";
+                var _response = await priceService.GetPriceData(symbol);
 
-                // Make an asynchronous GET request to the API
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
+                if (_response == null)
                 {
-                    // Deserialize the stock data (assuming it's in JSON format)
-                    var stockData = await response.Content.ReadFromJsonAsync<RealTimePrice>();
-
-                    // Process the stock data as needed (e.g., extract relevant info)
-
-                    // Return an OkResult with the stock data
-                    return Ok(stockData);
+                    // 404 Not Found - No Resource 
+                    return NotFound();
                 }
-                else
-                {
-                    // Handle non-successful response (e.g., log, return error status)
-                    return StatusCode((int) response.StatusCode);
-                }
+
+                // Return a single stock
+                return Ok(_response);
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
-                // Handle exceptions (e.g., network issues, invalid URL)
-                return BadRequest($"Error fetching stock data: {ex.Message}");
-            }
+                // Handle exceptions (e.g., network issues)
+                return StatusCode(500); // 500 Internal Server Error
+            }            
         }
     }
 }

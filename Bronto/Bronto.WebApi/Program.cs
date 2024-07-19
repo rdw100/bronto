@@ -19,7 +19,7 @@ string[] origins = new string[]
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpService, HttpService>();
-builder.Services.AddSingleton<IHttpService, TwelveHttpService>();
+builder.Services.AddSingleton<ITwelveHttpService, TwelveHttpService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IPriceService, PriceService>();
 builder.Services.AddControllers();
