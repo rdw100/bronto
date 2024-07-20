@@ -3,6 +3,7 @@ using Bronto.WebApi.Services.Http;
 using Bronto.WebApi.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace Bronto.WebApi.Services
 {
@@ -25,21 +26,33 @@ namespace Bronto.WebApi.Services
             {
                 if (!cache.TryGetValue(symbol, out RealTimePrice price))
                 {
-                    string apiUrl = $"price?symbol={symbol}";
-                    price = await httpService.GetAsync<RealTimePrice>(apiUrl);
-                    
+                    price = await httpService.GetAsync<RealTimePrice>($"price?symbol={symbol}");
+
                     var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromSeconds(120))
                     .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
                     .SetPriority(CacheItemPriority.Normal)
                     .SetSize(1024);
 
-                    cache.Set(symbol, price, cacheEntryOptions);
+                    if (price.StatusCode == (int)HttpStatusCode.OK)
+                    {
+                        // Cache the data for future requests
+                        cache.Set(symbol, price, cacheEntryOptions);
+                    }
+                    else
+                    {
+                        // Handle non-success status codes (e.g., log, throw exception, etc.)
+                        throw new HttpRequestException($"HTTP request failed with status code {price.StatusCode}");
+                    }
                 }
 
                 return price;
             }
             catch (HttpRequestException ex)
+            {
+                throw;
+            }
+            catch (Exception ex) 
             {
                 throw new Exception($"Error fetching stock data: {ex.Message}");
             }

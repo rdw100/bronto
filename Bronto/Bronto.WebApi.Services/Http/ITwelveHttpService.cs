@@ -1,7 +1,7 @@
 ﻿namespace Bronto.WebApi.Services.Http
 {
     public interface ITwelveHttpService
-    {
-        Task<T> GetAsync<T>(string url);
+    {        
+        Task<T> GetAsync<T>(string url) where T : new();
     }
 }

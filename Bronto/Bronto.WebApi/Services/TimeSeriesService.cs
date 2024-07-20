@@ -59,8 +59,8 @@ namespace Bronto.WebApi.Services
 
                     if (string.IsNullOrEmpty(timeSeries?.Symbol) || values.Count == 0)
                     {
-                        timeSeries.ResponseStatus = Enums.StockDataClientResponseStatus.StockDataApiError;
-                        timeSeries.ResponseMessage = "Invalid symbol or API key";
+                        timeSeries.StatusCodeType = Enums.StockDataClientResponseStatus.StockDataApiError;
+                        timeSeries.StatusMessage = "Invalid symbol or API key";
 
                         return timeSeries;
                     }
@@ -76,8 +76,8 @@ namespace Bronto.WebApi.Services
             {
                 return new StockDataTimeSeries()
                 {
-                    ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
-                    ResponseMessage = ex.ToString()
+                    StatusCodeType = Enums.StockDataClientResponseStatus.StockDataError,
+                    StatusMessage = ex.ToString()
                 };
             }
         }

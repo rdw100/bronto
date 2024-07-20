@@ -1,16 +1,18 @@
 ﻿using Newtonsoft.Json;
+using static Bronto.Models.Api.Enums;
 
 namespace Bronto.Models.Api
 {
-    public class RealTimePrice : BaseResponse
+    public class RealTimePrice : ApiResponse
     {
         [JsonProperty("price")]
         public double Price { get; set; }
     }
 
-    public class BaseResponse
+    public class ApiResponse
     {
-        public Enums.StockDataClientResponseStatus ResponseStatus { get; set; }
-        public string ResponseMessage { get; set; } = "RESPONSE_OK";
+        public StockDataClientResponseStatus StatusCodeType { get; set; }
+        public int StatusCode { get; set; }
+        public string StatusMessage { get; set; } = "RESPONSE_OK";
     }
 }

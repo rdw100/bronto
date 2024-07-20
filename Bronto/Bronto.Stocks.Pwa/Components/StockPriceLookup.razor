@@ -45,9 +45,9 @@
         {
             stockPrice = await priceService.GetPriceAsync(stockSymbol);
 
-            if (stockPrice.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+            if (stockPrice.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
             {
-                errorMessage = $"Error: {stockPrice.ResponseStatus} - {stockPrice.ResponseMessage}";
+                errorMessage = $"Error: {stockPrice.StatusCodeType} - {stockPrice.StatusMessage}";
                 // Disable the control
                 isControlDisabled = true;
 

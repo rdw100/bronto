@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
-    public class ChartResult : BaseResponse
+    public class ChartResult : ApiResponse
     {
         [JsonPropertyName("chart")]
         public Chart Chart { get; set; }
@@ -133,6 +133,39 @@
 
         [JsonPropertyName("validRanges")]
         public List<string> ValidRanges { get; set; }
+    }
+
+    /// <summary>
+    /// Calculates the price Change is the difference between the
+    /// current market price and the previous close price.
+    /// </summary>
+    public partial class MetaPriceCalculated
+    {
+        public decimal CurrentPrice { get; set; }
+        public decimal PreviousPrice { get; set; }
+        public string PriceChangeString => PriceChange > 0 ? $"+{PriceChange:F2}" : $"{PriceChange:F2}";
+        public string PercentageChangeString => PriceChange > 0 ? $"+{PercentPriceChange:F2}%" : $"{PercentPriceChange:F2}%";
+        private string ChangeColor => PriceChange > 0 ? "green" : "red";
+
+        // Calculate the price change
+        public decimal PriceChange => CurrentPrice - PreviousPrice;
+
+        // Calculate the percent price change
+        public decimal PercentPriceChange
+        {
+            get
+            {
+                if (PreviousPrice != 0)
+                {
+                    return (PriceChange / PreviousPrice) * 100;
+                }
+                else
+                {
+                    // Handle the case when PreviousPrice is zero (avoid division by zero)
+                    return 0;
+                }
+            }
+        }
     }
 
     public partial class CurrentTradingPeriod

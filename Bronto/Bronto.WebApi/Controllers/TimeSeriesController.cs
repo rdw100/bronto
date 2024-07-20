@@ -32,8 +32,8 @@ namespace Bronto.WebApi.Controllers
                 {
                     return new StockDataTimeSeries()
                     {
-                        ResponseStatus = Enums.StockDataClientResponseStatus.StockDataError,
-                        ResponseMessage = "Error retrieving stock data"
+                        StatusCodeType = Enums.StockDataClientResponseStatus.StockDataError,
+                        StatusMessage = "Error retrieving stock data"
                     };
                 }                    
             }

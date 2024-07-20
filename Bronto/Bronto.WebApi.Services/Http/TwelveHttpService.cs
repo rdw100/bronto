@@ -18,9 +18,49 @@ namespace Bronto.WebApi.Services.Http
             HttpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
         }
 
-        public Task<T> GetAsync<T>(string url)
+        /// <summary>
+        /// Accepts a generic type while handling unsuccessful responses gracefully
+        /// </summary>
+        /// <typeparam name="T">The generic type parameter T</typeparam>
+        /// <param name="url">The api endpoint</param>
+        /// <returns>If the response is successful, it deserializes the content to type T and returns it.  If the response is not successful, it creates a new instance of T and sets the StatusCode and StatusMessage properties if they exist.</returns>
+        /// <remarks>Ensure that the type T has StatusCode and StatusMessage properties.</remarks>
+        public async Task<T> GetAsync<T>(string url) where T : new()
         {
-            return HttpClient.GetFromJsonAsync<T>($"{url}&apikey={Key}");
+            HttpResponseMessage response = await HttpClient.GetAsync($"{url}&apikey={Key}");
+            var result = new T();
+            var statusCodeProperty = typeof(T).GetProperty("StatusCode");
+            var statusMessageProperty = typeof(T).GetProperty("StatusMessage");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<T>();
+                if (statusCodeProperty != null)
+                {
+                    statusCodeProperty.SetValue(content, 200);
+                }
+
+                if (statusMessageProperty != null)
+                {
+                    statusMessageProperty.SetValue(content, "OK");
+                }
+
+                return content;
+            }
+            else
+            {
+                if (statusCodeProperty != null)
+                {
+                    statusCodeProperty.SetValue(result, (int)response.StatusCode);
+                }
+
+                if (statusMessageProperty != null)
+                {
+                    statusMessageProperty.SetValue(result, response.ReasonPhrase);
+                }
+
+                return result;
+            }
         }
     }
 }

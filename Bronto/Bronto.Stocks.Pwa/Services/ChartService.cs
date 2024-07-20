@@ -32,16 +32,16 @@ namespace Bronto.Stocks.Pwa.Services
                     // Handle 429 Too Many Requests
                     return new ChartResult
                     {
-                        ResponseMessage = "Rate limit exceeded. Please wait a while before making more requests.",
-                        ResponseStatus = StockDataClientResponseStatus.RateLimitExceeded
+                        StatusMessage = "Rate limit exceeded. Please wait a while before making more requests.",
+                        StatusCodeType = StockDataClientResponseStatus.RateLimitExceeded
                     };
                 }
                 else
                 {
                     return new ChartResult
                     {
-                        ResponseMessage = $"Stock API Error: {response.StatusCode}",
-                        ResponseStatus = StockDataClientResponseStatus.StockDataApiError
+                        StatusMessage = $"Stock API Error: {response.StatusCode}",
+                        StatusCodeType = StockDataClientResponseStatus.StockDataApiError
                     };
                 }
 
@@ -51,8 +51,8 @@ namespace Bronto.Stocks.Pwa.Services
             {
                 return new ChartResult
                 {
-                    ResponseMessage = $"HTTP Error: {ex.Message}",
-                    ResponseStatus = StockDataClientResponseStatus.StockDataError
+                    StatusMessage = $"HTTP Error: {ex.Message}",
+                    StatusCodeType = StockDataClientResponseStatus.StockDataError
                 };
             }
         }

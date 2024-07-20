@@ -101,9 +101,9 @@ namespace Bronto.WebApi.Services
         private List<MyOHLC> ParseJsonToOHLC(string jsonResponse)
         {
             var parsedData = JsonSerializer.Deserialize<ChartResult>(jsonResponse);
-            
+
             List<Result>? tsStockValues = parsedData?.Chart.Result;
-            
+
             var ohlcList = new List<MyOHLC>();
 
             for (int i = 0; i < tsStockValues[0].Indicators.Quote[0].Open.Count; i++)

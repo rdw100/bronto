@@ -45,10 +45,10 @@ namespace Bronto.Tests.Api
             Assert.IsType<OkObjectResult>(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
             var actualPrice = Assert.IsType<RealTimePrice>(okResult.Value);                        
-            actualPrice.ResponseMessage.Should().Be("RESPONSE_OK");
+            actualPrice.StatusMessage.Should().Be("RESPONSE_OK");
             actualPrice.Price.Should().BeGreaterThan(0);
             actualPrice.Price.Should().BePositive();
-            Assert.Equal(StockDataClientResponseStatus.Ok, actualPrice.ResponseStatus);
+            Assert.Equal(StockDataClientResponseStatus.Ok, actualPrice.StatusCodeType);
         }
     }
 }
