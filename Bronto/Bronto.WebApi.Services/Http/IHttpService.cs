@@ -2,6 +2,6 @@
 {
     public interface IHttpService
     {
-        Task<T> GetAsync<T>(string url);
+        Task<T> GetAsync<T>(string url) where T : new();
     }
 }
