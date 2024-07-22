@@ -1,4 +1,5 @@
 ﻿using Bronto.Models.Api.Chart;
+using Bronto.Shared;
 using Bronto.WebApi.Services.Http;
 using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -39,16 +40,10 @@ namespace Bronto.WebApi.Services
                 {
                     chart = await httpService.GetAsync<ChartResult>(apiUrl);
 
-                    var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(120))
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-                    .SetPriority(CacheItemPriority.Normal)
-                    .SetSize(1024);
-
                     if (chart.StatusCode == (int)HttpStatusCode.OK)
                     {
                         // Cache the data for future requests
-                        cache.Set(cacheKey, chart, cacheEntryOptions);
+                        cache.Set(cacheKey, chart, CacheOptions.Default);
                     }
                     else
                     {

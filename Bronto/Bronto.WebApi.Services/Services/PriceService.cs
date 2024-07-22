@@ -1,4 +1,5 @@
 ﻿using Bronto.Models.Api;
+using Bronto.Shared;
 using Bronto.WebApi.Services.Http;
 using Bronto.WebApi.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -28,16 +29,10 @@ namespace Bronto.WebApi.Services
                 {
                     price = await httpService.GetAsync<RealTimePrice>($"price?symbol={symbol}");
 
-                    var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(120))
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-                    .SetPriority(CacheItemPriority.Normal)
-                    .SetSize(1024);
-
                     if (price.StatusCode == (int)HttpStatusCode.OK)
                     {
                         // Cache the data for future requests
-                        cache.Set(symbol, price, cacheEntryOptions);
+                        cache.Set(symbol, price, CacheOptions.Default);
                     }
                     else
                     {

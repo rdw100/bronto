@@ -66,7 +66,7 @@ namespace Bronto.Models.Api
             RateLimitExceeded
         }
 
-        public enum HttpStatusCode
+        public enum HttpApiStatusCode
         {
             // Informational responses (100–199)
             Continue = 100,
