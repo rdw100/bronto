@@ -57,4 +57,4 @@ flowchart TD
 
  ### Demo
  The image shows Blazor WASM application execution. 
- ![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/tree/main/Bronto/Bronto.Wasm.Pwa/wwwroot/Candlestick.JPG)
+ ![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/blob/main/Bronto/Bronto.Stocks.Pwa/wwwroot/img/Candlestick.JPG)
