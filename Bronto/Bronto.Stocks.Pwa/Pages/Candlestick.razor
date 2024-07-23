@@ -3,6 +3,8 @@
 @using Bronto.Models
 @using Bronto.Models.Api
 @using Bronto.Models.Api.Chart
+@using Bronto.Models.Enums
+@using Bronto.Shared
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
@@ -14,30 +16,11 @@
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
 <h3>Candlestick Chart</h3>
-
 <h3>Select a Stock Symbol</h3>
 
 <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
 
 <p>Selected Stock Symbol: @_selectedStockSymbol</p>
-
-@code {
-    private Timer? timer = null;
-
-    private string _selectedStockSymbol = "AAPL";
-
-    public string SelectedStockSymbol
-    {
-        get => _selectedStockSymbol;
-        set
-        {
-            _selectedStockSymbol = value ?? "AAPL";
-            _ = LoadChart();
-        }
-    }
-}
-
-<p>You chose: @SelectedStockSymbol</p>
 
 @if (loadFailed)
 {
@@ -52,26 +35,35 @@ else if (!ChartDataList.Chart.Result.Any())
     <p>Loading ...</p>
 }
 else
-{
-    <p>Symbol: @_selectedStockSymbol</p>    
+{  
     <p>Symbol: @ChartDataList.Chart.Result[0].Meta.Symbol</p>
     <p>Interval: @ChartDataList.Chart.Result[0].Meta.Range</p>
-    <p>Updated: @UnixTimeStampToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
+    <p>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
     <p><button @onclick="()=>Clear()">Clear</button></p>
+    <div>
+        <span>Stock Price: @regularMarketPrice.ToString("C", CultureInfo.CurrentCulture)</span>
+        <span style="color: @ChangeColor;">@ChangeString</span>
+        <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
+    </div>
+    <FluentStack HorizontalGap="10">
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneDay.GetStringValue())">1d</FluentButton>
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveDays.GetStringValue())">5d</FluentButton>
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneMonth.GetStringValue())">1M</FluentButton>
+    </FluentStack>
 }
 
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 
 <BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
-<table class="table">
+<table class="table table-striped-columns table-bordered">
     <thead>
         <tr>
-            <th>Date</th>
-            <th>Open</th>
-            <th>High</th>
-            <th>Low</th>
-            <th>Close</th>
+            <th scope="col">Date</th>
+            <th scope="col">Open</th>
+            <th scope="col">High</th>
+            <th scope="col">Low</th>
+            <th scope="col">Close</th>
         </tr>
     </thead>
     <tbody>
@@ -80,7 +72,7 @@ else
             @foreach (var price in prices)
             {
                 <tr>
-                    <td>@price.DateTime.ToShortDateString()</td>
+                    <th scope="row">@price.DateTime.ToShortDateString()</th>
                     <td>@price.Open.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
                     <td>@price.High.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
                     <td>@price.Low.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
@@ -96,38 +88,66 @@ else
     private string errorMessage;
     private ChartResult ChartDataList { get; set; }
     private List<OHLC> prices { get; set; }
+    private string _selectedStockSymbol = "AAPL";
+
+    public string SelectedStockSymbol
+    {
+        get => _selectedStockSymbol;
+        set
+        {
+            _selectedStockSymbol = value ?? "AAPL";
+            _ = LoadChart(_selectedStockSymbol, Interval, Range);
+        }
+    }
+
+    public string Interval { get; set; } = "1d";
+    public string Range { get; set; } = "5d";
     public DesignThemeModes Mode { get; set; }
+    
     BlazorPlot BlazorPlot { get; set; } = new();
+
+    // Display Price change data
+    private double regularMarketPrice;
+    private double chartPreviousClose;
+    private double Change => regularMarketPrice - chartPreviousClose;
+    private double PercentageChange => (Change / chartPreviousClose) * 100;
+    private string ChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
+    private string PercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
+    private string ChangeColor => Change > 0 ? "green" : "red";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await LoadChart();
+            await LoadChart(_selectedStockSymbol, Interval, Range);
         }
     }
 
     // get and plot time series price data
-    private async Task LoadChart()
+    private async Task LoadChart(string symbol, string interval, string range)
     {
         try
         {
             BlazorPlot.Plot.Clear();
             loadFailed = false;
-            await LoadData();
+            await LoadData(symbol, interval, range);
             BlazorPlot.Refresh();
             StateHasChanged();
         }
         catch (Exception ex)
         {
             loadFailed = true;
+            errorMessage = $"Error: {ex.Message}";
         }
     }
 
-    private async Task LoadData()
+    private async Task LoadData(string symbol, string interval, string range)
     {
         prices = null;
-        prices = await GetStocks(_selectedStockSymbol);
+        prices = await GetStocks(symbol, interval, range);
+
+        regularMarketPrice = ChartDataList.Chart.Result[0].Meta.RegularMarketPrice;
+        chartPreviousClose = ChartDataList.Chart.Result[0].Meta.ChartPreviousClose;
 
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
@@ -152,11 +172,11 @@ else
         };
     }
 
-    protected async Task<List<OHLC>> GetStocks(string symbol)
+    protected async Task<List<OHLC>> GetStocks(string symbol, string interval, string range)
     {
-        ChartDataList = await chartService.GetChartData(symbol);
+        ChartDataList = await chartService.GetChartData(symbol, interval, range);
 
-        @if (ChartDataList != null && ChartDataList.ResponseStatus == Enums.StockDataClientResponseStatus.Ok)
+        @if (ChartDataList != null && ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.Ok)
         {
             List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
                 .Select((open, index) => new OHLC
@@ -165,17 +185,17 @@ else
                         High = ChartDataList.Chart.Result[0].Indicators.Quote[0].High[index],
                         Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
                         Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
-                        DateTime = UnixTimeStampToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
+                        DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
                         TimeSpan = TimeSpan.FromDays(1.0)
                     })
                 .ToList();
 
             prices = ohlcList; 
         }
-        else if (ChartDataList.ResponseStatus == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+        else if (ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
         {
             loadFailed = true;
-            errorMessage = $"Error: {ChartDataList.ResponseStatus} {ChartDataList.ResponseMessage}";
+            errorMessage = $"Error: {ChartDataList.StatusCodeType} {ChartDataList.StatusMessage}";
             prices = null;
             StateHasChanged();
         }
@@ -186,14 +206,9 @@ else
     private void Clear()
     {
         BlazorPlot.Plot.Clear();
+        BlazorPlot.Refresh();
+        loadFailed = false;
+        prices = null;
         StateHasChanged();
-    }
-
-    public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
-    {
-        // Unix timestamp is seconds past epoch (January 1, 1970)
-        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        DateTime dateTime = epoch.AddSeconds(unixTimeStamp).ToLocalTime();
-        return dateTime;
     }
 }
