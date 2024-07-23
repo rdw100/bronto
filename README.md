@@ -52,3 +52,9 @@ flowchart TD
     │   ├── DomainTests
     │   └── InfrastructureTests    
     │
+    ├── Bronto.sln
+    └── README.md
+
+ ### Demo
+ The image shows Blazor WASM application execution. 
+ ![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/tree/main/Bronto/Bronto.Wasm.Pwa/wwwroot/Candlestick.JPG)
