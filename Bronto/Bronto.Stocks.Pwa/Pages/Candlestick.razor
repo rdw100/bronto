@@ -13,14 +13,7 @@
 @using System.Globalization
 @inject IChartService chartService
 
-<h1>ScottPlot 5 in Blazor</h1>
-<h2>Financial Plot</h2>
-<h3>Candlestick Chart</h3>
-<h3>Select a Stock Symbol</h3>
-
-<StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
-
-<p>Selected Stock Symbol: @_selectedStockSymbol</p>
+<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 
 @if (loadFailed)
 {
@@ -34,54 +27,66 @@ else if (!ChartDataList.Chart.Result.Any())
 {
     <p>Loading ...</p>
 }
-else
-{  
-    <p>Symbol: @ChartDataList.Chart.Result[0].Meta.Symbol</p>
-    <p>Interval: @ChartDataList.Chart.Result[0].Meta.Range</p>
-    <p>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
-    <p><button @onclick="()=>Clear()">Clear</button></p>
-    <div>
-        <span>Stock Price: @regularMarketPrice.ToString("C", CultureInfo.CurrentCulture)</span>
-        <span style="color: @ChangeColor;">@ChangeString</span>
-        <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
-    </div>
-    <FluentStack HorizontalGap="10">
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneDay.GetStringValue())">1d</FluentButton>
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveDays.GetStringValue())">5d</FluentButton>
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneMonth.GetStringValue())">1M</FluentButton>
-    </FluentStack>
-}
+else if (ChartDataList is not null)
+{
+    <FluentCard Width="360px" Height="580px">
 
-<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
+        <h3>Candlestick Chart</h3> 
 
-<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+        <h6>Select a Stock Symbol    
+            <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+        </h6>
+    
+        <h3>@ChartDataList.Chart.Result[0].Meta.Symbol: @ChartDataList.Chart.Result[0].Meta.FullExchangeName</h3>
 
-<table class="table table-striped-columns table-bordered">
-    <thead>
-        <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Open</th>
-            <th scope="col">High</th>
-            <th scope="col">Low</th>
-            <th scope="col">Close</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (prices is not null)
-        {
-            @foreach (var price in prices)
-            {
+        <h4>
+            <span>@regularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @ChartDataList.Chart.Result[0].Meta.Currency</span>
+            <span style="color: @ChangeColor;">@ChangeString</span>
+            <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
+        </h4>
+
+        <h6>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</h6>
+
+        <table class="table table-bordered">
+            <tbody>
                 <tr>
-                    <th scope="row">@price.DateTime.ToShortDateString()</th>
-                    <td>@price.Open.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
-                    <td>@price.High.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
-                    <td>@price.Low.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
-                    <td>@price.Close.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
+                    <td colspan="4">
+                        <FluentStack HorizontalGap="10">
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneDay.GetStringValue())">1D</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveDays.GetStringValue())">5D</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneMonth.GetStringValue())">1M</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths.GetStringValue())">3M</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths.GetStringValue())">6M</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear.GetStringValue())">1Y</FluentButton>
+                        </FluentStack>
+                    </td>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+                <tr>
+                    <td colspan="4"><BlazorPlot @ref=BlazorPlot Style="width: 320px; height: 220px;" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Open:</th>
+                <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">Avg Vol:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketVolume.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <th scope="row">High:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketDayHigh.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">52wk High:</th>
+                <td>@ChartDataList.Chart.Result[0].Meta.FiftyTwoWeekHigh.ToString("C", CultureInfo.CurrentCulture)</td>
+                </tr>
+                <tr>
+                    <th scope="row">Low:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketDayLow.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">52wk Low:</th>
+                <td>@ChartDataList.Chart.Result[0].Meta.FiftyTwoWeekLow.ToString("C", CultureInfo.CurrentCulture)</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </FluentCard>
+}
 
 @code {
     private bool loadFailed;
@@ -151,9 +156,6 @@ else
 
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
-        BlazorPlot.Plot.XLabel("Time");
-        BlazorPlot.Plot.YLabel("Price");
-        BlazorPlot.Plot.Title("Candlestick");
 
         if (Mode == DesignThemeModes.Dark)
         {
@@ -189,8 +191,9 @@ else
                         TimeSpan = TimeSpan.FromDays(1.0)
                     })
                 .ToList();
-
-            prices = ohlcList; 
+            loadFailed = false;
+            prices = ohlcList;
+            StateHasChanged();
         }
         else if (ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
         {
@@ -201,14 +204,5 @@ else
         }
 
         return prices;
-    }
-
-    private void Clear()
-    {
-        BlazorPlot.Plot.Clear();
-        BlazorPlot.Refresh();
-        loadFailed = false;
-        prices = null;
-        StateHasChanged();
     }
 }

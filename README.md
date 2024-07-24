@@ -2,8 +2,8 @@
 :sauropod:Bronto is a Progressive Web Application (PWA) that accesses stock market data using .NET 8 and Blazor.
 
 ### Demo
- The image shows Blazor WASM application execution. 
- ![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/blob/main/Bronto/Bronto.Stocks.Pwa/wwwroot/img/Candlestick.JPG)
+The image shows Blazor WASM application execution.\
+![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/blob/main/Bronto/Bronto.Stocks.Pwa/wwwroot/img/Candlestick.JPG)
 
  ### Design
 ```mermaid
