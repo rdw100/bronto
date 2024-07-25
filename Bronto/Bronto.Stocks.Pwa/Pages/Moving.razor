@@ -1,39 +1,48 @@
 ﻿@page "/moving"
 @using AutoMapper
 @using Bronto.Models.Api
+@using Bronto.Models.Api.Chart
+@using Bronto.Models.Enums
+@using Bronto.Shared
+@using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
 @using ScottPlot
 @using ScottPlot.Blazor
-@inject IStockService stockService
+@inject IChartService chartService
 
 <h1>ScottPlot 5 in Blazor</h1>
 <h2>Financial Plot</h2>
 <h3>Simple Moving Average</h3>
+<h3>Select a Stock Symbol</h3>
 
-@if (StockDataList is null)
+<StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+
+<p>Selected Stock Symbol: @_selectedStockSymbol</p>
+
+@if (loadFailed)
+{
+    <p><span style="color: red;">@errorMessage</span></p>
+}
+else if (ChartDataList is null)
 {
     <p>Populating ...</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
 }
-else if (!StockDataList.Values.Any())
+else if (!ChartDataList.Chart.Result.Any())
 {
     <p>Loading ...</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
-}
-else if (loadFailed)
-{
-    <p>Failed to load data.</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
 }
 else
 {
-    <p>Symbol: @StockDataList.Symbol</p>
-    <p>Interval: @StockDataList.Interval</p>
-    <p>Updated: @StockDataList.Values[0].Datetime</p>
+    <p>Symbol: @ChartDataList.Chart.Result[0].Meta.Symbol</p>
+    <p>Interval: @ChartDataList.Chart.Result[0].Meta.Range</p>
+    <p>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
+    <p><button @onclick="()=>Clear()">Clear</button></p>
+    <FluentStack HorizontalGap="10">
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths.GetStringValue())">3m</FluentButton>
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths.GetStringValue())">6m</FluentButton>
+        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear.GetStringValue())">1y</FluentButton>
+    </FluentStack>
 }
 
 <FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
@@ -42,23 +51,63 @@ else
 
 @code {
     private bool loadFailed;
-    private StockDataTimeSeries StockDataList { get; set; }
+    private string errorMessage;
+    private ChartResult ChartDataList { get; set; }
     private List<OHLC> prices { get; set; }
+    private string _selectedStockSymbol = "AAPL";
+    public string SelectedStockSymbol
+    {
+        get => _selectedStockSymbol;
+        set
+        {
+            _selectedStockSymbol = value ?? "AAPL";
+            _ = LoadChart(_selectedStockSymbol, Interval, Range);
+        }
+    }
+    public string Interval { get; set; } = "1d";
+    public string Range { get; set; } = StockRange.ThreeMonths.GetStringValue();
     public DesignThemeModes Mode { get; set; }
+
     BlazorPlot BlazorPlot { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadChart(_selectedStockSymbol, Interval, Range);
+        }
+    }
+
+    // get and plot time series price data
+    private async Task LoadChart(string symbol, string interval, string range)
+    {
+        try
+        {
+            BlazorPlot.Plot.Clear();
+            loadFailed = false;
+            await LoadData(symbol, interval, range);
+            BlazorPlot.Refresh();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+        }
+    }
+
+    private async Task LoadData(string symbol, string interval, string range)
     {
         // get and plot time series price data
         try
         {
             loadFailed = false;
             prices = null;
-            prices = await GetStocks();
+            prices = await GetStocks(symbol, interval, range);
         }
         catch (Exception ex)
         {
             loadFailed = true;
+            errorMessage = $"Error: {ex.Message}";
         }
 
         BlazorPlot.Plot.Add.Candlestick(prices);
@@ -93,22 +142,45 @@ else
             BlazorPlot.Plot.Legend.FontColor = ScottPlot.Color.FromHex("#d7d7d7");
             BlazorPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#d7d7d7");
         };
-
-        BlazorPlot.Refresh();
-        await base.OnInitializedAsync();
     }
 
-    protected async Task<List<OHLC>> GetStocks()
+    protected async Task<List<OHLC>> GetStocks(string symbol, string interval, string range)
     {
-        StockDataList = await stockService.GetTimeSeriesAsync("AAPL", "1day", "75");
+        ChartDataList = await chartService.GetChartData(symbol, interval, range);
 
-        @if (StockDataList != null)
+        @if (ChartDataList != null && ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.Ok)
         {
-            // Use AutoMapper mapping ScottPlot's OHLC
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<TimeSeriesValues, OHLC>());
-            var mapper = config.CreateMapper();
-            prices = mapper.Map<List<OHLC>>(StockDataList.Values.ToList());
+            List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
+                .Select((open, index) => new OHLC
+                    {
+                        Open = open,
+                        High = ChartDataList.Chart.Result[0].Indicators.Quote[0].High[index],
+                        Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
+                        Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
+                        DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
+                        TimeSpan = TimeSpan.FromDays(1.0)
+                    })
+                .ToList();
+
+            prices = ohlcList;
         }
+        else if (ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
+        {
+            loadFailed = true;
+            errorMessage = $"Error: {ChartDataList.StatusCodeType} {ChartDataList.StatusMessage}";
+            prices = null;
+            StateHasChanged();
+        }
+
         return prices;
+    }
+
+    private void Clear()
+    {
+        BlazorPlot.Plot.Clear();
+        BlazorPlot.Refresh();
+        loadFailed = false;
+        prices = null;
+        StateHasChanged();
     }
 }

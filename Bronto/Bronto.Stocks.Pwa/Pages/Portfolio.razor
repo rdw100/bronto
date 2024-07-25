@@ -189,9 +189,9 @@
 
         StockPrices[symbol] = price.Price;
 
-        if (price.ResponseMessage != null)
+        if (price.StatusMessage != null)
         {
-            errorMessage = price.ResponseMessage;
+            errorMessage = price.StatusMessage;
         }
 
         ShowToast("Retrieved", symbol, ToastIntent.Download);

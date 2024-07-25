@@ -5,7 +5,7 @@
 The image shows Blazor WASM application execution.\
 ![Blazor WASM Candlestick Image](https://github.com/rdw100/bronto/blob/main/Bronto/Bronto.Stocks.Pwa/wwwroot/img/Candlestick.JPG)
 
- ### Design
+### Design - Overview
 ```mermaid
 ---
 title: Integrating a Third-Party API in ASP.NET Web API Project
@@ -24,7 +24,7 @@ flowchart TD
     style API_Provider stroke:Red,stroke-width:4px
 
 ```
-
+ ### Design - Structure
     Solution
     │     
     ├── Presentation PWA               <- The project UI logic.
