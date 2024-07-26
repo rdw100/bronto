@@ -9,16 +9,10 @@
 @using Bronto.Stocks.Pwa.Services
 @using ScottPlot
 @using ScottPlot.Blazor
+@using System.Globalization
 @inject IChartService chartService
 
-<h1>ScottPlot 5 in Blazor</h1>
-<h2>Financial Plot</h2>
-<h3>Bollinger Bands</h3>
-<h3>Select a Stock Symbol</h3>
-
-<StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
-
-<p>Selected Stock Symbol: @_selectedStockSymbol</p>
+<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
 
 @if (loadFailed) 
 {
@@ -32,22 +26,66 @@ else if (!ChartDataList.Chart.Result.Any())
 {
     <p>Loading ...</p>
 }
-else
+else if (ChartDataList is not null)
 {
-    <p>Symbol: @ChartDataList.Chart.Result[0].Meta.Symbol</p>
-    <p>Interval: @ChartDataList.Chart.Result[0].Meta.Range</p>
-    <p>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</p>
-    <p><button @onclick="()=>Clear()">Clear</button></p>
-    <FluentStack HorizontalGap="10">
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths.GetStringValue())">3m</FluentButton>
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths.GetStringValue())">6m</FluentButton>
-        <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear.GetStringValue())">1y</FluentButton>
-    </FluentStack>
+    <FluentCard Width="360px" Height="580px">
+
+        <h3>Bollinger Bands</h3>
+
+        <h6>
+            Select a Stock Symbol
+            <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+        </h6>
+
+        <h3>@ChartDataList.Chart.Result[0].Meta.Symbol: @ChartDataList.Chart.Result[0].Meta.FullExchangeName</h3>
+
+        <h4>
+            <span>@regularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @ChartDataList.Chart.Result[0].Meta.Currency</span>
+            <span style="color: @ChangeColor;">@ChangeString</span>
+            <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
+        </h4>
+
+        <h6>Updated: @UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Meta.RegularMarketTime)</h6>
+
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <td colspan="4">
+                        <FluentStack HorizontalGap="10">
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths.GetStringValue())">3m</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths.GetStringValue())">6m</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear.GetStringValue())">1y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TwoYears.GetStringValue())">2y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveYears.GetStringValue())">5y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TenYears.GetStringValue())">10y</FluentButton>
+                        </FluentStack>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4"><BlazorPlot @ref=BlazorPlot Style="width: 320px; height: 220px;" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Open:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">Avg Vol:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketVolume.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <th scope="row">High:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketDayHigh.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">52wk High:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.FiftyTwoWeekHigh.ToString("C", CultureInfo.CurrentCulture)</td>
+                </tr>
+                <tr>
+                    <th scope="row">Low:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.RegularMarketDayLow.ToString("C", CultureInfo.CurrentCulture)</td>
+                    <th scope="row">52wk Low:</th>
+                    <td>@ChartDataList.Chart.Result[0].Meta.FiftyTwoWeekLow.ToString("C", CultureInfo.CurrentCulture)</td>
+                </tr>
+            </tbody>
+        </table>
+    </FluentCard>
 }
-
-<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" />
-
-<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
 @code {
     private bool loadFailed;
@@ -71,6 +109,15 @@ else
     public DesignThemeModes Mode { get; set; }
     
     BlazorPlot BlazorPlot { get; set; } = new();
+
+    // Display Price change data
+    private double regularMarketPrice;
+    private double chartPreviousClose;
+    private double Change => regularMarketPrice - chartPreviousClose;
+    private double PercentageChange => (Change / chartPreviousClose) * 100;
+    private string ChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
+    private string PercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
+    private string ChangeColor => Change > 0 ? "green" : "red";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -102,6 +149,9 @@ else
     {
         prices = null;
         prices = await GetStocks(symbol, interval, range);
+
+        regularMarketPrice = ChartDataList.Chart.Result[0].Meta.RegularMarketPrice;
+        chartPreviousClose = ChartDataList.Chart.Result[0].Meta.ChartPreviousClose;
 
         BlazorPlot.Plot.Add.Candlestick(prices);
         BlazorPlot.Plot.Axes.DateTimeTicksBottom();
@@ -160,8 +210,9 @@ else
                         TimeSpan = TimeSpan.FromDays(1.0)
                     })
                 .ToList();
-
+            loadFailed = false;
             prices = ohlcList;
+            StateHasChanged();
         }
         else if (ChartDataList.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
         {
@@ -172,14 +223,5 @@ else
         }
 
         return prices;
-    }
-
-    private void Clear()
-    {
-        BlazorPlot.Plot.Clear();
-        BlazorPlot.Refresh();
-        loadFailed = false;
-        prices = null;
-        StateHasChanged();
     }
 }
