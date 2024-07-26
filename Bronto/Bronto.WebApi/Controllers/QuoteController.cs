@@ -1,6 +1,6 @@
 ﻿namespace Bronto.WebApi.Controllers
 {
-    using Bronto.WebApi.Services.Services;
+    using Bronto.WebApi.Services.Interfaces;
     using Microsoft.AspNetCore.Mvc;
     using System.Threading.Tasks;
 
@@ -8,17 +8,17 @@
     [Route("api/[controller]")]
     public class QuoteController : ControllerBase
     {
-        private readonly QuoteService _yahooFinanceService;
+        private readonly IQuoteService quoteService;
 
-        public QuoteController(QuoteService yahooFinanceService)
+        public QuoteController(IQuoteService iQuoteService)
         {
-            _yahooFinanceService = yahooFinanceService;
+            quoteService = iQuoteService;
         }
 
         [HttpGet("{symbol}")]
         public async Task<IActionResult> GetQuote(string symbol)
         {
-            var quote = await _yahooFinanceService.GetQuoteAsync(symbol);
+            var quote = await quoteService.GetQuote(symbol);
             return Ok(quote);
         }
     }

@@ -23,7 +23,7 @@ builder.Services.AddSingleton<IHttpService, HttpService>();
 builder.Services.AddSingleton<ITwelveHttpService, TwelveHttpService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IPriceService, PriceService>();
-builder.Services.AddHttpClient<QuoteService>();
+builder.Services.AddHttpClient<IQuoteService, QuoteService>();
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
