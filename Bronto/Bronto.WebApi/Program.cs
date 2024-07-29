@@ -1,7 +1,6 @@
 using Bronto.WebApi.Services;
 using Bronto.WebApi.Services.Http;
 using Bronto.WebApi.Services.Interfaces;
-using Bronto.WebApi.Services.Services;
 using System.Globalization;
 using System.Threading.RateLimiting;
 
@@ -21,9 +20,10 @@ builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpService, HttpService>();
 builder.Services.AddSingleton<ITwelveHttpService, TwelveHttpService>();
+builder.Services.AddSingleton<IFreeHttpService, FreeHttpService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IPriceService, PriceService>();
-builder.Services.AddHttpClient<IQuoteService, QuoteService>();
+builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

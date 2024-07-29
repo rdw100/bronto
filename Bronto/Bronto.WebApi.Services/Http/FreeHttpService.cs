@@ -1,24 +1,30 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace Bronto.WebApi.Services.Http
 {
-    public class HttpService : IHttpService
+    public class FreeHttpService : IFreeHttpService
     {
-        private readonly HttpClient HttpClient;
-        private readonly string BaseUrl;
 
-        public HttpService(HttpClient httpClient, IConfiguration config)
+        private readonly HttpClient HttpClient;
+
+        public FreeHttpService(HttpClient httpClient)
         {
-            BaseUrl = config.GetSection("FreeApi")["Host"];
             HttpClient = httpClient;
-            HttpClient.BaseAddress = new Uri($"https://{BaseUrl}/");
-            HttpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
+            HttpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
         }
 
-        public async Task<T> GetAsync<T>(string url) where T : new()
+        public async Task<HttpResponseMessage> GetAsync(HttpRequestMessage request)
         {
-            HttpResponseMessage response = await HttpClient.GetAsync(url);
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
+            //response.EnsureSuccessStatusCode();
+            return response;
+        }
+
+        public async Task<T> SendAsync<T>(HttpRequestMessage request) where T : new()
+        {
+            var response = await HttpClient.SendAsync(request);
+
             var result = new T();
             var statusCodeProperty = typeof(T).GetProperty("StatusCode");
             var statusMessageProperty = typeof(T).GetProperty("StatusMessage");
