@@ -4,7 +4,7 @@
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
 @inject IToastService ToastService
-@inject IPriceService priceService
+@inject IQuoteService quoteService
 @inject IWatchlistService watchlistService
 
 <h3>Search</h3>
@@ -87,7 +87,7 @@
 
     private async Task OnSearchAsync(OptionsSearchEventArgs<String> e)
     {
-        e.Items = priceService.Symbols.Where((i => i.StartsWith(e.Text, StringComparison.OrdinalIgnoreCase)))
+        e.Items = quoteService.Symbols.Where((i => i.StartsWith(e.Text, StringComparison.OrdinalIgnoreCase)))
                                   .AsEnumerable();
     }
 
