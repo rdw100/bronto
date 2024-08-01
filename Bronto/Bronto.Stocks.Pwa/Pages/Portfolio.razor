@@ -185,9 +185,9 @@
 
     private async Task GetStockPrice(string symbol)
     {
-        var price = await priceService.GetPriceAsync(symbol);
+        var price = await quoteService.GetQuote(symbol);
 
-        StockPrices[symbol] = price.Price;
+        StockPrices[symbol] = price.QuoteResponse.Result[0].RegularMarketPrice;
 
         if (price.StatusMessage != null)
         {

@@ -1,9 +1,10 @@
 ﻿@page "/storepricelookup"
 @using Bronto.Models.Api
+@using Bronto.Models.Api.Quote
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
 @using System.Globalization
-@inject IPriceService priceService
+@inject IQuoteService quoteService
 
 <h3>Stock Price Lookup</h3>
 
@@ -24,7 +25,7 @@
 @if (stockPrice != null)
 {
     <p>Stock: @stockSymbol</p>
-    <p>Price: @stockPrice.Price.ToString("C", CultureInfo.GetCultureInfo("en-US"))</p>
+    <p>Price: @stockPrice.QuoteResponse.Result[0].RegularMarketPrice.ToString("C", CultureInfo.GetCultureInfo("en-US"))</p>
 }
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -33,7 +34,7 @@
 
 @code {
     private string stockSymbol;
-    private RealTimePrice? stockPrice = null;
+    private QuoteResult? stockPrice = null;
     private string errorMessage;
     private bool isControlDisabled = false;
     private int remainingTimeInSeconds = 60;
@@ -43,7 +44,7 @@
     {
         try
         {
-            stockPrice = await priceService.GetPriceAsync(stockSymbol);
+            stockPrice = await quoteService.GetQuote(stockSymbol);
 
             if (stockPrice.StatusCodeType == Enums.StockDataClientResponseStatus.RateLimitExceeded)
             {
