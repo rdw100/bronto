@@ -1,3 +1,4 @@
+using BlazorPro.BlazorSize;
 using Bronto.Stocks.Pwa;
 using Bronto.Stocks.Pwa.Interfaces;
 using Bronto.Stocks.Pwa.Services;
@@ -8,6 +9,9 @@ using Microsoft.FluentUI.AspNetCore.Components;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddMediaQueryService();
+builder.Services.AddScoped<IResizeListener, ResizeListener>();
 
 builder.Services.AddHttpClient<IStockService, StockService>(client =>
 {
