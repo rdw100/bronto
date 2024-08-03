@@ -1,6 +1,7 @@
 ﻿@page "/MyChart"
-@using ScottPlot.Blazor
 @using BlazorPro.BlazorSize
+@using ScottPlot.Blazor
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject IResizeListener listener
 
 <p>This component demonstrates adaptive rendering of a Blazor UI.</p>
@@ -8,6 +9,91 @@
 <h3>Height: @browser.Height</h3>
 <h3>Width: @browser.Width</h3>
 <h3>MQ: @IsXSmallMedia</h3>
+
+<FluentToolbar id="toolbar-fluent-components" Orientation="Orientation.Horizontal" Style="border: 4px dotted var(--accent-fill-rest) width:100%; margin-bottom: 24px;">
+    <FluentDatePicker Label="Start Date" />
+    <FluentDatePicker Label="End Date" />
+    <FluentButton Appearance="Appearance.Outline">1D</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">5D</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">1M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">3M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">6M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">1Y</FluentButton>
+    <FluentSelect Name="Interval" Id="Interval" TOption="string">
+        <FluentOption>1h</FluentOption>
+        <FluentOption>4h</FluentOption>
+        <FluentOption>1d</FluentOption>
+    </FluentSelect>
+    <FluentSelect Name="ChartType" Id="ChartType" TOption="string">
+        <FluentOption>Candle</FluentOption>
+        <FluentOption>Area</FluentOption>
+        <FluentOption>Line</FluentOption>
+    </FluentSelect>     
+</FluentToolbar>
+
+<FluentStack Style="margin-bottom: 24px;" VerticalAlignment="VerticalAlignment.Center">
+    <FluentDatePicker Label="Start Date" />
+    <FluentDatePicker Label="End Date" />
+    <FluentButton Appearance="Appearance.Outline">1D</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">5D</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">1M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">3M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">6M</FluentButton>
+    <FluentButton Appearance="Appearance.Outline">1Y</FluentButton>
+    <FluentSelect Name="Interval" Id="Interval" TOption="string">
+        <FluentOption>1h</FluentOption>
+        <FluentOption>4h</FluentOption>
+        <FluentOption>1d</FluentOption>
+    </FluentSelect>
+    <FluentSelect Name="ChartType" Id="ChartType" TOption="string">
+        <FluentOption>Candle</FluentOption>
+        <FluentOption>Area</FluentOption>
+        <FluentOption>Line</FluentOption>
+    </FluentSelect>
+</FluentStack>
+
+<FluentGrid Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.Center" Style="padding: 4px; ">
+    <FluentGridItem xs="12">
+        <div class="card">
+            xs="12"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="12" sm="6" HiddenWhen="GridItemHidden.SmAndDown">
+        <div class="card">
+            xs="12" sm="6" Hidden="SmAndDown"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="12" sm="6">
+        <div class="card">
+            xs="12" sm="6"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <div class="card">
+            xs="6" sm="3"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <div class="card">
+            xs="6" sm="3"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <div class="card">
+            xs="6" sm="3"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <div class="card">
+            xs="6" sm="3"
+        </div>
+    </FluentGridItem>
+    <FluentGridItem xs="3">
+        <div class="card">
+            xs="3"
+        </div>
+    </FluentGridItem>
+</FluentGrid>
 
 <BlazorPlot @ref="blazorPlot" Style="@(chartStyle)" />
 
