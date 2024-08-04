@@ -1,9 +1,11 @@
 ﻿using Bronto.Models.Api;
+using Bronto.WebApi.Authorization;
 using Bronto.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bronto.WebApi.Controllers
 {
+    [DevelopmentOnly]
     [Route("api/[controller]")]
     [ApiController]
     public class TimeSeriesController : ControllerBase

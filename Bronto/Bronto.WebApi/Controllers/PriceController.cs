@@ -1,9 +1,11 @@
-﻿using Bronto.WebApi.Services.Interfaces;
+﻿using Bronto.WebApi.Authorization;
+using Bronto.WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Bronto.WebApi.Controllers
 {
+    [DevelopmentOnly]
     [Route("api/[controller]")]
     [ApiController]
     public class PriceController : ControllerBase
