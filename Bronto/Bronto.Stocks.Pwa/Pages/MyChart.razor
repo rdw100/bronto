@@ -1,5 +1,6 @@
 ﻿@page "/MyChart"
 @using BlazorPro.BlazorSize
+@using ScottPlot
 @using ScottPlot.Blazor
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject IResizeListener listener
@@ -10,7 +11,7 @@
 <h3>Width: @browser.Width</h3>
 <h3>MQ: @IsXSmallMedia</h3>
 
-<FluentToolbar id="toolbar-fluent-components" Orientation="Orientation.Horizontal" Style="border: 4px dotted var(--accent-fill-rest) width:100%; margin-bottom: 24px;">
+<FluentToolbar id="toolbar-fluent-components" Style="border: 4px dotted var(--accent-fill-rest); width:100%; margin-bottom: 24px;">
     <FluentDatePicker Label="Start Date" />
     <FluentDatePicker Label="End Date" />
     <FluentButton Appearance="Appearance.Outline">1D</FluentButton>
@@ -24,10 +25,11 @@
         <FluentOption>4h</FluentOption>
         <FluentOption>1d</FluentOption>
     </FluentSelect>
-    <FluentSelect Name="ChartType" Id="ChartType" TOption="string">
-        <FluentOption>Candle</FluentOption>
-        <FluentOption>Area</FluentOption>
-        <FluentOption>Line</FluentOption>
+    <FluentSelect Name="TbChartType" Id="TbChartType" TOption="string" @bind-Value="@selectedOption">
+        <FluentOption Value="Bolinger">Bolinger</FluentOption>
+        <FluentOption Value="Candlestick">Candlestick</FluentOption>
+        <FluentOption Value="Moving">Moving</FluentOption>
+        <FluentOption Value="OHLC">OHLC</FluentOption>
     </FluentSelect>     
 </FluentToolbar>
 
@@ -46,9 +48,10 @@
         <FluentOption>1d</FluentOption>
     </FluentSelect>
     <FluentSelect Name="ChartType" Id="ChartType" TOption="string">
-        <FluentOption>Candle</FluentOption>
-        <FluentOption>Area</FluentOption>
-        <FluentOption>Line</FluentOption>
+        <FluentOption>Bolinger</FluentOption>
+        <FluentOption>Candlestick</FluentOption>
+        <FluentOption>Moving</FluentOption>
+        <FluentOption>OHLC</FluentOption>
     </FluentSelect>
 </FluentStack>
 
@@ -95,11 +98,21 @@
     </FluentGridItem>
 </FluentGrid>
 
-<BlazorPlot @ref="blazorPlot" Style="@(chartStyle)" />
+@if (selectedOption == "Candlestick")
+{
+    <BlazorPlot @ref="blazorPlotCandlestick" Style="@(chartStyle)" />
+}
+else if (selectedOption == "Bolinger")
+{
+    <BlazorPlot @ref="blazorPlotBolinger" Style="@(chartStyle)" />
+}
 
 @code {
-    private BlazorPlot blazorPlot;
-    private string chartStyle = "width: 150px; height: 150px;";
+    BlazorPlot blazorPlotCandlestick { get; set; } = new();
+    BlazorPlot blazorPlotBolinger { get; set; } = new();
+
+    string selectedOption = "Candlestick";
+    private string chartStyle = "width: 1024px; height: 768px;";
 
     BrowserWindowSize browser = new BrowserWindowSize();
 
@@ -113,6 +126,39 @@
         {
             // Subscribe to the OnResized event. This will do work when the browser is resized.
             listener.OnResized += WindowResized;
+        }
+        if (selectedOption == "Candlestick")
+        {
+            // Generate OHLC data for 5 days
+            List<OHLC> prices = new();
+            DateTime currentDate = DateTime.Now.Date;
+            TimeSpan timeSpan = TimeSpan.FromDays(1);
+
+            for (int i = 0; i < 5; i++)
+            {
+                double open = Generate.RandomNumber(100, 200);
+                double close = Generate.RandomNumber(100, 200);
+                double high = Math.Max(open, close) + Generate.RandomNumber(5);
+                double low = Math.Min(open, close) - Generate.RandomNumber(5);
+
+                prices.Add(new OHLC(open, high, low, close, currentDate, timeSpan));
+                currentDate = currentDate.AddDays(1);
+            }
+
+            blazorPlotCandlestick.Plot.Add.Candlestick(prices);
+            blazorPlotCandlestick.Plot.Axes.DateTimeTicksBottom();
+        }
+        else if (selectedOption == "Bolinger")
+        {
+            // Generate some sample data for line and bar chart
+            double[] prices = { 100, 110, 105, 120, 125 };
+            double[] volumes = { 1.000, 1.200, .900, 1.500, 1.300 };
+            double[] daysNumeric = { 1, 2, 3, 4, 5 };
+
+            blazorPlotBolinger.Plot.Add.Scatter(daysNumeric, prices);// Signal(prices);
+            blazorPlotBolinger.Plot.Add.Bars(daysNumeric, volumes);
+            blazorPlotBolinger.Plot.XLabel("Volume (Millions)");
+            blazorPlotBolinger.Plot.YLabel("Price");
         }
     }
 
