@@ -1,5 +1,6 @@
 ﻿@page "/MyChart"
 @using BlazorPro.BlazorSize
+@using Bronto.Models.Enums
 @using ScottPlot
 @using ScottPlot.Blazor
 @using Microsoft.FluentUI.AspNetCore.Components
@@ -10,50 +11,35 @@
 <h3>Height: @browser.Height</h3>
 <h3>Width: @browser.Width</h3>
 <h3>MQ: @IsXSmallMedia</h3>
+<h4>Chart: @selectedOption</h4>
+<h4>Interval: @selectedInterval</h4>
+<h4>Range: @selectedRange</h4>
 
 <FluentToolbar id="toolbar-fluent-components" Style="border: 4px dotted var(--accent-fill-rest); width:100%; margin-bottom: 24px;">
     <FluentDatePicker Label="Start Date" />
     <FluentDatePicker Label="End Date" />
-    <FluentButton Appearance="Appearance.Outline">1D</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">5D</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">1M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">3M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">6M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">1Y</FluentButton>
-    <FluentSelect Name="Interval" Id="Interval" TOption="string">
-        <FluentOption>1h</FluentOption>
-        <FluentOption>4h</FluentOption>
-        <FluentOption>1d</FluentOption>
+
+    <FluentRadioGroup @bind-Value=selectedRange >
+        <FluentRadio Value=@(StockRange.OneDay.GetStringValue()) Checked="true">1D</FluentRadio>
+        <FluentRadio Value=@(StockRange.FiveDays.GetStringValue())>5D</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneMonth.GetStringValue())>1M</FluentRadio>
+        <FluentRadio Value=@(StockRange.ThreeMonths.GetStringValue())>3M</FluentRadio>
+        <FluentRadio Value=@(StockRange.SixMonths.GetStringValue())>6M</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneYear.GetStringValue())>1Y</FluentRadio>
+    </FluentRadioGroup>
+    <FluentSelect Name="ChartInterval" Id="ChartInterval" TOption="string" @bind-Value="@selectedInterval">
+        <FluentOption Value="1h">1h</FluentOption>
+        <FluentOption Value="4h">4h</FluentOption>
+        <FluentOption Value="1d">1d</FluentOption>
     </FluentSelect>
     <FluentSelect Name="TbChartType" Id="TbChartType" TOption="string" @bind-Value="@selectedOption">
         <FluentOption Value="Bolinger">Bolinger</FluentOption>
         <FluentOption Value="Candlestick">Candlestick</FluentOption>
         <FluentOption Value="Moving">Moving</FluentOption>
         <FluentOption Value="OHLC">OHLC</FluentOption>
-    </FluentSelect>     
+    </FluentSelect>
+    <FluentButton OnClick="() => RefreshChildComponent()">Refresh Child Component</FluentButton>
 </FluentToolbar>
-
-<FluentStack Style="margin-bottom: 24px;" VerticalAlignment="VerticalAlignment.Center">
-    <FluentDatePicker Label="Start Date" />
-    <FluentDatePicker Label="End Date" />
-    <FluentButton Appearance="Appearance.Outline">1D</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">5D</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">1M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">3M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">6M</FluentButton>
-    <FluentButton Appearance="Appearance.Outline">1Y</FluentButton>
-    <FluentSelect Name="Interval" Id="Interval" TOption="string">
-        <FluentOption>1h</FluentOption>
-        <FluentOption>4h</FluentOption>
-        <FluentOption>1d</FluentOption>
-    </FluentSelect>
-    <FluentSelect Name="ChartType" Id="ChartType" TOption="string">
-        <FluentOption>Bolinger</FluentOption>
-        <FluentOption>Candlestick</FluentOption>
-        <FluentOption>Moving</FluentOption>
-        <FluentOption>OHLC</FluentOption>
-    </FluentSelect>
-</FluentStack>
 
 <FluentGrid Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.Center" Style="padding: 4px; ">
     <FluentGridItem xs="12">
@@ -100,19 +86,31 @@
 
 @if (selectedOption == "Candlestick")
 {
-    <BlazorPlot @ref="blazorPlotCandlestick" Style="@(chartStyle)" />
+    <Candlestick 
+        @ref="candlestickChart" 
+        ChartStyles="@(chartStyle)" 
+        Interval="@selectedInterval" 
+        Range="@selectedRange"/>
 }
 else if (selectedOption == "Bolinger")
 {
-    <BlazorPlot @ref="blazorPlotBolinger" Style="@(chartStyle)" />
+    <Bollinger ChartStyles="@(chartStyle)" />
+}
+else if (selectedOption == "Moving")
+{
+    <Moving ChartStyles="@(chartStyle)" />
+}
+else if (selectedOption == "OHLC")
+{
+    <Ohlc ChartStyles="@(chartStyle)" />
 }
 
 @code {
-    BlazorPlot blazorPlotCandlestick { get; set; } = new();
-    BlazorPlot blazorPlotBolinger { get; set; } = new();
-
     string selectedOption = "Candlestick";
+    string selectedInterval = "1d";
+    string selectedRange = "5d";
     private string chartStyle = "width: 1024px; height: 768px;";
+    private Candlestick candlestickChart;
 
     BrowserWindowSize browser = new BrowserWindowSize();
 
@@ -126,40 +124,7 @@ else if (selectedOption == "Bolinger")
         {
             // Subscribe to the OnResized event. This will do work when the browser is resized.
             listener.OnResized += WindowResized;
-        }
-        if (selectedOption == "Candlestick")
-        {
-            // Generate OHLC data for 5 days
-            List<OHLC> prices = new();
-            DateTime currentDate = DateTime.Now.Date;
-            TimeSpan timeSpan = TimeSpan.FromDays(1);
-
-            for (int i = 0; i < 5; i++)
-            {
-                double open = Generate.RandomNumber(100, 200);
-                double close = Generate.RandomNumber(100, 200);
-                double high = Math.Max(open, close) + Generate.RandomNumber(5);
-                double low = Math.Min(open, close) - Generate.RandomNumber(5);
-
-                prices.Add(new OHLC(open, high, low, close, currentDate, timeSpan));
-                currentDate = currentDate.AddDays(1);
-            }
-
-            blazorPlotCandlestick.Plot.Add.Candlestick(prices);
-            blazorPlotCandlestick.Plot.Axes.DateTimeTicksBottom();
-        }
-        else if (selectedOption == "Bolinger")
-        {
-            // Generate some sample data for line and bar chart
-            double[] prices = { 100, 110, 105, 120, 125 };
-            double[] volumes = { 1.000, 1.200, .900, 1.500, 1.300 };
-            double[] daysNumeric = { 1, 2, 3, 4, 5 };
-
-            blazorPlotBolinger.Plot.Add.Scatter(daysNumeric, prices);// Signal(prices);
-            blazorPlotBolinger.Plot.Add.Bars(daysNumeric, volumes);
-            blazorPlotBolinger.Plot.XLabel("Volume (Millions)");
-            blazorPlotBolinger.Plot.YLabel("Price");
-        }
+        }        
     }
 
     async void WindowResized(object _, BrowserWindowSize window)
@@ -190,6 +155,12 @@ else if (selectedOption == "Bolinger")
         }
 
         // We're outside of the component's lifecycle, be sure to let it know it has to re-render.
+        StateHasChanged();
+    }
+
+    private void RefreshChildComponent()
+    {
+        candlestickChart.Refresh();
         StateHasChanged();
     }
 

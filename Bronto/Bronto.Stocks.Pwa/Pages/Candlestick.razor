@@ -103,13 +103,13 @@ else if (ChartDataList is not null)
             _ = LoadChart(_selectedStockSymbol, Interval, Range);
         }
     }
-
+    [Parameter]
     public string Interval { get; set; } = "1d";
+    [Parameter]
     public string Range { get; set; } = "5d";
-    public DesignThemeModes Mode { get; set; }
     [Parameter]
     public string ChartStyles { get; set; }
-
+    public DesignThemeModes Mode { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
     // Display Price change data
@@ -206,5 +206,18 @@ else if (ChartDataList is not null)
         }
 
         return prices;
+    }
+}
+
+<p>Last refreshed at: @lastRefreshedTime</p>
+
+@code {
+    private string lastRefreshedTime;
+
+    public void Refresh()
+    {
+        lastRefreshedTime = DateTime.Now.ToString("HH:mm:ss");
+        BlazorPlot.Refresh();
+        StateHasChanged();
     }
 }
