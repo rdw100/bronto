@@ -1,0 +1,33 @@
+﻿@page "/testchart"
+@using Bronto.Stocks.Pwa.Components
+@using Microsoft.FluentUI.AspNetCore.Components
+<h3>Parent Component</h3>
+
+<FluentToolbar>
+    <FluentRadioGroup @bind-Value="selectedTimeFrame" @onchange="OnTimeFrameChanged">
+        <FluentRadio value="1d">1 Day</FluentRadio>
+        <FluentRadio value="5d">5 Days</FluentRadio>
+        <FluentRadio value="1m">1 Month</FluentRadio>
+    </FluentRadioGroup>
+</FluentToolbar>
+
+<ChartComponent @ref="chartComponent" />
+
+@code {
+    private string selectedTimeFrame = "1d";
+    private ChartComponent chartComponent;
+
+    private void OnTimeFrameChanged(ChangeEventArgs e)
+    {
+        selectedTimeFrame = e.Value.ToString();
+        chartComponent.RefreshChart(selectedTimeFrame);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            chartComponent.RefreshChart(selectedTimeFrame);
+        }
+    }
+}

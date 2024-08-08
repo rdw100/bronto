@@ -1,0 +1,58 @@
+﻿@using ScottPlot.Blazor
+@using ScottPlot.Plottable
+@using ScottPlot
+@implements IDisposable
+
+<BlazorPlot @ref="blazorPlot" />
+
+@code {
+    private BlazorPlot blazorPlot;
+
+    public void RefreshChart(string timeFrame)
+    {
+        var plt = blazorPlot.Plot;
+        plt.Clear();
+
+        // Generate sample data based on timeFrame
+        double[] data;
+        switch (timeFrame)
+        {
+            case "1d":
+                data = GenerateRandomWalkData(24); // 24 data points for 1 day
+                break;
+            case "5d":
+                data = GenerateRandomWalkData(24 * 5); // 5 days
+                break;
+            case "1m":
+                data = GenerateRandomWalkData(24 * 30); // 1 month
+                break;
+            default:
+                data = GenerateRandomWalkData(24); // default to 1 day
+                break;
+        }
+
+        plt.Add.Signal(data);
+        plt.Title($"Data for {timeFrame}");
+        plt.XLabel("Time");
+        plt.YLabel("Value");
+
+        blazorPlot.Refresh();
+    }
+
+    private double[] GenerateRandomWalkData(int pointCount)
+    {
+        Random rand = new();
+        double[] data = new double[pointCount];
+        data[0] = rand.NextDouble();
+        for (int i = 1; i < pointCount; i++)
+        {
+            data[i] = data[i - 1] + rand.NextDouble() - 0.5;
+        }
+        return data;
+    }
+
+    public void Dispose()
+    {
+        blazorPlot.Plot?.Dispose();
+    }
+}
