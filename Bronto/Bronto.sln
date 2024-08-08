@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Tests.RateLimit", "B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.Shared", "Bronto.Shared\Bronto.Shared.csproj", "{C4FBFE44-CC8C-4069-98E3-4BA075282669}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bronto.WebApi.Services", "Bronto.WebApi.Services\Bronto.WebApi.Services.csproj", "{F84CE011-9321-4CF1-B755-164E0A181DF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bronto.WebApi.Services", "Bronto.WebApi.Services\Bronto.WebApi.Services.csproj", "{F84CE011-9321-4CF1-B755-164E0A181DF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
