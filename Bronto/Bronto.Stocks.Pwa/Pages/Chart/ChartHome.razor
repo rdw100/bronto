@@ -1,0 +1,33 @@
+﻿@page "/charthome"
+@using Bronto.Stocks.Pwa.Pages.Chart
+@using ScottPlot
+@using ScottPlot.Blazor
+<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
+
+<ChartToolbar OnChartTypeChanged="HandleChartTypeChanged" OnDataRangeChanged="HandleDataRangeChanged" />
+<ChartDisplay ChartType="selectedChartType" DataRange="selectedDataRange" />
+
+@code {
+    private string selectedChartType = "Candlestick";
+    private string selectedDataRange = "1d";
+
+    private void HandleChartTypeChanged(string chartType)
+    {
+        selectedChartType = chartType;
+        StateHasChanged();
+    }
+
+    private void HandleDataRangeChanged(string dataRange)
+    {
+        selectedDataRange = dataRange;
+        StateHasChanged();
+    }
+
+    BlazorPlot BlazorPlot { get; set; } = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BlazorPlot.Plot.Add.Signal(Generate.Sin());
+        BlazorPlot.Plot.Add.Signal(Generate.Cos());
+    }
+}

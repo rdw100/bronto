@@ -1,0 +1,33 @@
+﻿@page "/charttoolbar"
+@using Microsoft.FluentUI.AspNetCore.Components
+@using ScottPlot
+@using ScottPlot.Blazor
+
+@code {
+    [Parameter] public EventCallback<string> OnChartTypeChanged { get; set; }
+    [Parameter] public EventCallback<string> OnDataRangeChanged { get; set; }
+
+    private async Task ChartTypeChanged(ChangeEventArgs e)
+    {
+        await OnChartTypeChanged.InvokeAsync(e.Value.ToString());
+    }
+
+    private async Task DataRangeChanged(ChangeEventArgs e)
+    {
+        await OnDataRangeChanged.InvokeAsync(e.Value.ToString());
+    }
+}
+
+<FluentToolbar>
+    <FluentSelect @onchange="ChartTypeChanged" TOption="string">
+        <FluentOption Value="Bollinger">Bollinger</FluentOption>
+        <FluentOption Value="Candlestick">Candlestick</FluentOption>
+        <FluentOption Value="OHLC">OHLC</FluentOption>
+    </FluentSelect>
+
+    <FluentSelect @onchange="DataRangeChanged" TOption="string">
+        <FluentOption Value="1d">1 Day</FluentOption>
+        <FluentOption Value="5d">5 Days</FluentOption>
+        <FluentOption Value="1m">1 Month</FluentOption>
+    </FluentSelect>
+</FluentToolbar>
