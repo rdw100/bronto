@@ -1,21 +1,20 @@
 ﻿@using ScottPlot.Blazor
 @using ScottPlot.Plottable
 @using ScottPlot
-@implements IDisposable
 
 <BlazorPlot @ref="blazorPlot" />
 
 @code {
     private BlazorPlot blazorPlot;
 
-    public void RefreshChart(string timeFrame)
+    public void RefreshChart(string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
     {
         var plt = blazorPlot.Plot;
         plt.Clear();
 
-        // Generate sample data based on timeFrame
+        // Generate sample data based on range and interval
         double[] data;
-        switch (timeFrame)
+        switch (range)
         {
             case "1d":
                 data = GenerateRandomWalkData(24); // 24 data points for 1 day
@@ -31,8 +30,20 @@
                 break;
         }
 
-        plt.Add.Signal(data);
-        plt.Title($"Data for {timeFrame}");
+        switch (chartType)
+        {
+            case "Moving":
+                plt.Add.Signal(data);
+                break;
+            case "Bolinger":
+                // Add Bollinger Bands logic here
+                break;
+            case "Candlestick":
+                // Add Candlestick chart logic here
+                break;
+        }
+
+        plt.Title($"Data for {range} - {interval} - {chartType}");
         plt.XLabel("Time");
         plt.YLabel("Value");
 
@@ -50,7 +61,6 @@
         }
         return data;
     }
-
     public void Dispose()
     {
         blazorPlot.Plot?.Dispose();

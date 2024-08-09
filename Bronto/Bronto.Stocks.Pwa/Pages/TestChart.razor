@@ -4,30 +4,53 @@
 <h3>Parent Component</h3>
 
 <FluentToolbar>
-    <FluentRadioGroup @bind-Value="selectedTimeFrame" @onchange="OnTimeFrameChanged">
+    <FluentSelect @bind-Value="selectedChartType" @onchange="OnChartControlChanged" TOption="string">
+        <FluentOption value="Moving">Moving</FluentOption>
+        <FluentOption value="Bolinger">Bolinger</FluentOption>
+        <FluentOption value="Candlestick">Candlestick</FluentOption>
+    </FluentSelect>
+
+    <FluentSelect @bind-Value="selectedInterval" @onchange="OnChartControlChanged" TOption="string">
+        <FluentOption value="1h">1 Hour</FluentOption>
+        <FluentOption value="4h">4 Hours</FluentOption>
+        <FluentOption value="1d">1 Day</FluentOption>
+    </FluentSelect>
+
+    <FluentRadioGroup @bind-Value="selectedRange" @onchange="OnChartControlChanged">
         <FluentRadio value="1d">1 Day</FluentRadio>
         <FluentRadio value="5d">5 Days</FluentRadio>
         <FluentRadio value="1m">1 Month</FluentRadio>
     </FluentRadioGroup>
+
+    <FluentDatePicker Label="Start Date" @bind-Value="startDate" @onchange="OnChartControlChanged" />
+    <FluentDatePicker Label="End Date" @bind-Value="endDate" @onchange="OnChartControlChanged" />
 </FluentToolbar>
 
 <ChartComponent @ref="chartComponent" />
 
 @code {
-    private string selectedTimeFrame = "1d";
+    private string selectedChartType = "Moving";
+    private string selectedInterval = "1h";
+    private string selectedRange = "1d";
+    private DateTime? startDate = DateTime.Today.AddDays(-7);
+    private DateTime? endDate = DateTime.Today;
     private ChartComponent chartComponent;
 
-    private void OnTimeFrameChanged(ChangeEventArgs e)
+    private void OnChartControlChanged(ChangeEventArgs e)
     {
-        selectedTimeFrame = e.Value.ToString();
-        chartComponent.RefreshChart(selectedTimeFrame);
+        RefreshChart();
+    }
+
+    private void RefreshChart()
+    {
+        chartComponent.RefreshChart(selectedChartType, selectedInterval, selectedRange, startDate, endDate);
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            chartComponent.RefreshChart(selectedTimeFrame);
+            RefreshChart();
         }
     }
 }
