@@ -3,31 +3,78 @@
 @using ScottPlot
 @using ScottPlot.Blazor
 
+<FluentToolbar>
+    <FluentSelect @onchange="HandleChange" TOption="string">
+        <FluentOption value="Moving">Moving</FluentOption>
+        <FluentOption value="Bolinger">Bolinger</FluentOption>
+        <FluentOption value="Candlestick">Candlestick</FluentOption>
+    </FluentSelect>
+
+    <FluentSelect @onchange="HandleChange" TOption="string">
+        <FluentOption value="1h">1 Hour</FluentOption>
+        <FluentOption value="4h">4 Hours</FluentOption>
+        <FluentOption value="1d">1 Day</FluentOption>
+    </FluentSelect>
+
+    <FluentRadioGroup @onchange="HandleChange" TValue="string">
+        <FluentRadio value="1d">1 Day</FluentRadio>
+        <FluentRadio value="5d">5 Days</FluentRadio>
+        <FluentRadio value="1m">1 Month</FluentRadio>
+    </FluentRadioGroup>
+
+    <FluentDatePicker @onchange="HandleDateChangeStart" />
+    <FluentDatePicker @onchange="HandleDateChangeEnd" />
+</FluentToolbar>
+
 @code {
     [Parameter] public EventCallback<string> OnChartTypeChanged { get; set; }
-    [Parameter] public EventCallback<string> OnDataRangeChanged { get; set; }
+    [Parameter] public EventCallback<string> OnIntervalChanged { get; set; }
+    [Parameter] public EventCallback<string> OnRangeChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnStartDateChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnEndDateChanged { get; set; }
 
-    private async Task ChartTypeChanged(ChangeEventArgs e)
+    private string selectedChartType = "Moving";
+    private string selectedInterval = "1h";
+    private string selectedRange = "1d";
+    private DateTime? startDate = DateTime.Today.AddDays(-7);
+    private DateTime? endDate = DateTime.Today;
+
+    private async Task HandleChange(ChangeEventArgs e)
     {
-        await OnChartTypeChanged.InvokeAsync(e.Value.ToString());
+        string targetValue = e.Value?.ToString();
+
+        if (targetValue == "Moving" || targetValue == "Bolinger" || targetValue == "Candlestick")
+        {
+            selectedChartType = targetValue;
+            await OnChartTypeChanged.InvokeAsync(selectedChartType);
+        }
+        else if (targetValue == "1h" || targetValue == "4h" || targetValue == "1d")
+        {
+            selectedInterval = targetValue;
+            await OnIntervalChanged.InvokeAsync(selectedInterval);
+        }
+        else if (targetValue == "1d" || targetValue == "5d" || targetValue == "1m")
+        {
+            selectedRange = targetValue;
+            await OnRangeChanged.InvokeAsync(selectedRange);
+        }
     }
 
-    private async Task DataRangeChanged(ChangeEventArgs e)
+    private async Task HandleDateChangeStart(ChangeEventArgs e)
     {
-        await OnDataRangeChanged.InvokeAsync(e.Value.ToString());
+        if (DateTime.TryParse(e.Value?.ToString(), out var dateValue))
+        {
+            startDate = dateValue;
+            await OnStartDateChanged.InvokeAsync(startDate);
+        }
+    }
+
+    private async Task HandleDateChangeEnd(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dateValue))
+        {
+            endDate = dateValue;
+            await OnEndDateChanged.InvokeAsync(endDate);
+        }
     }
 }
-
-<FluentToolbar>
-    <FluentSelect @onchange="ChartTypeChanged" TOption="string">
-        <FluentOption Value="Bollinger">Bollinger</FluentOption>
-        <FluentOption Value="Candlestick">Candlestick</FluentOption>
-        <FluentOption Value="OHLC">OHLC</FluentOption>
-    </FluentSelect>
-
-    <FluentSelect @onchange="DataRangeChanged" TOption="string">
-        <FluentOption Value="1d">1 Day</FluentOption>
-        <FluentOption Value="5d">5 Days</FluentOption>
-        <FluentOption Value="1m">1 Month</FluentOption>
-    </FluentSelect>
-</FluentToolbar>

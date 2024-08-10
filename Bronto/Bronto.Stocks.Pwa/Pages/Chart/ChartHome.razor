@@ -2,32 +2,67 @@
 @using Bronto.Stocks.Pwa.Pages.Chart
 @using ScottPlot
 @using ScottPlot.Blazor
-<BlazorPlot @ref=BlazorPlot Style="width: 400px; height: 300px;" />
 
-<ChartToolbar OnChartTypeChanged="HandleChartTypeChanged" OnDataRangeChanged="HandleDataRangeChanged" />
-<ChartDisplay ChartType="selectedChartType" DataRange="selectedDataRange" />
+<h3>Parent Component</h3>
+
+<ChartToolbar
+    OnChartTypeChanged="HandleChartTypeChanged"
+    OnIntervalChanged="HandleIntervalChanged"
+    OnRangeChanged="HandleRangeChanged"
+    OnStartDateChanged="HandleStartDateChanged"
+    OnEndDateChanged="HandleEndDateChanged" />
+
+<ChartDisplay @ref="chartComponent" />
 
 @code {
-    private string selectedChartType = "Candlestick";
-    private string selectedDataRange = "1d";
+    private string selectedChartType = "Moving";
+    private string selectedInterval = "1h";
+    private string selectedRange = "1d";
+    private DateTime? startDate = DateTime.Today.AddDays(-7);
+    private DateTime? endDate = DateTime.Today;
+    private ChartDisplay chartComponent;
 
     private void HandleChartTypeChanged(string chartType)
     {
         selectedChartType = chartType;
-        StateHasChanged();
+        RefreshChart();
     }
 
-    private void HandleDataRangeChanged(string dataRange)
+    private void HandleIntervalChanged(string interval)
     {
-        selectedDataRange = dataRange;
-        StateHasChanged();
+        selectedInterval = interval;
+        RefreshChart();
     }
 
-    BlazorPlot BlazorPlot { get; set; } = new();
+    private void HandleRangeChanged(string range)
+    {
+        selectedRange = range;
+        RefreshChart();
+    }
+
+    private void HandleStartDateChanged(DateTime? date)
+    {
+        startDate = date;
+        RefreshChart();
+    }
+
+    private void HandleEndDateChanged(DateTime? date)
+    {
+        endDate = date;
+        RefreshChart();
+    }
+
+    private void RefreshChart()
+    {
+        chartComponent?.RefreshChart(selectedChartType, selectedInterval, selectedRange, startDate, endDate);
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        BlazorPlot.Plot.Add.Signal(Generate.Sin());
-        BlazorPlot.Plot.Add.Signal(Generate.Cos());
+        if (firstRender)
+        {
+            RefreshChart();
+        }
     }
 }
+
