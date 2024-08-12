@@ -16,10 +16,11 @@
         <FluentOption value="1d">1 Day</FluentOption>
     </FluentSelect>
 
-    <FluentRadioGroup @onchange="HandleChange" TValue="string">
+    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleChange" >
         <FluentRadio value="1d">1 Day</FluentRadio>
         <FluentRadio value="5d">5 Days</FluentRadio>
         <FluentRadio value="1m">1 Month</FluentRadio>
+        <FluentRadio value="3m">3 Month</FluentRadio>
     </FluentRadioGroup>
 
     <FluentDatePicker @onchange="HandleDateChangeStart" />
@@ -34,8 +35,8 @@
     [Parameter] public EventCallback<DateTime?> OnEndDateChanged { get; set; }
 
     private string selectedChartType = "Moving";
-    private string selectedInterval = "1h";
-    private string selectedRange = "1d";
+    private string selectedInterval = "1d";
+    private string selectedRange = "5d";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
 
@@ -53,7 +54,7 @@
             selectedInterval = targetValue;
             await OnIntervalChanged.InvokeAsync(selectedInterval);
         }
-        else if (targetValue == "1d" || targetValue == "5d" || targetValue == "1m")
+        else if (targetValue == "5d" || targetValue == "1m" || targetValue == "3m")
         {
             selectedRange = targetValue;
             await OnRangeChanged.InvokeAsync(selectedRange);
