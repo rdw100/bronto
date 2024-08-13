@@ -4,23 +4,23 @@
 @using ScottPlot.Blazor
 
 <FluentToolbar>
-    <FluentSelect @onchange="HandleChange" TOption="string">
-        <FluentOption value="Moving">Moving</FluentOption>
-        <FluentOption value="Bolinger">Bolinger</FluentOption>
-        <FluentOption value="Candlestick">Candlestick</FluentOption>
+    <FluentSelect @bind-Value="selectedChartType" @onchange="HandleChartTypeChange" TOption="string">
+        <FluentOption Value="Moving">Moving</FluentOption>
+        <FluentOption Value="Bollinger">Bollinger</FluentOption>
+        <FluentOption Value="Candlestick">Candlestick</FluentOption>
     </FluentSelect>
 
-    <FluentSelect @onchange="HandleChange" TOption="string">
-        <FluentOption value="1h">1 Hour</FluentOption>
-        <FluentOption value="4h">4 Hours</FluentOption>
-        <FluentOption value="1d">1 Day</FluentOption>
+    <FluentSelect @bind-Value="selectedInterval" @onchange="HandleIntervalChange" TOption="string">
+        <FluentOption Value="1h">1 Hour</FluentOption>
+        <FluentOption Value="4h">4 Hours</FluentOption>
+        <FluentOption Value="1d">1 Day</FluentOption>
     </FluentSelect>
 
-    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleChange" >
-        <FluentRadio value="1d">1 Day</FluentRadio>
-        <FluentRadio value="5d">5 Days</FluentRadio>
-        <FluentRadio value="1m">1 Month</FluentRadio>
-        <FluentRadio value="3m">3 Month</FluentRadio>
+    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="string">
+        <FluentRadio Value=@("1d")>1 Day</FluentRadio>
+        <FluentRadio Value=@("5d")>5 Days</FluentRadio>
+        <FluentRadio Value=@("1m")>1 Month</FluentRadio>
+        <FluentRadio Value=@("3m")>3 Months</FluentRadio>
     </FluentRadioGroup>
 
     <FluentDatePicker @onchange="HandleDateChangeStart" />
@@ -40,21 +40,33 @@
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleChartTypeChange(ChangeEventArgs e)
     {
         string targetValue = e.Value?.ToString();
 
-        if (targetValue == "Moving" || targetValue == "Bolinger" || targetValue == "Candlestick")
+        if (targetValue == "Moving" || targetValue == "Bollinger" || targetValue == "Candlestick")
         {
             selectedChartType = targetValue;
             await OnChartTypeChanged.InvokeAsync(selectedChartType);
         }
-        else if (targetValue == "1h" || targetValue == "4h" || targetValue == "1d")
+    }
+    
+    private async Task HandleIntervalChange(ChangeEventArgs e)
+    {
+        string targetValue = e.Value?.ToString();
+
+        if (targetValue == "1h" || targetValue == "4h" || targetValue == "1d")
         {
             selectedInterval = targetValue;
             await OnIntervalChanged.InvokeAsync(selectedInterval);
         }
-        else if (targetValue == "5d" || targetValue == "1m" || targetValue == "3m")
+    }
+
+    private async Task HandleRangeChange(ChangeEventArgs e)
+    {
+        string targetValue = e.Value?.ToString();
+
+        if (targetValue == "1d" || targetValue == "5d" || targetValue == "1m" || targetValue == "3m")
         {
             selectedRange = targetValue;
             await OnRangeChanged.InvokeAsync(selectedRange);
