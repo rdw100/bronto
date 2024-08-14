@@ -1,9 +1,14 @@
 ﻿@page "/charthome"
+@using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Pages.Chart
 @using ScottPlot
 @using ScottPlot.Blazor
 
 <h3>Parent Component</h3>
+
+<h6>Select a Stock Symbol    
+    <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+</h6>
 
 <ChartToolbar
     OnChartTypeChanged="HandleChartTypeChanged"
@@ -21,7 +26,17 @@
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
     private ChartDisplay chartComponent;
+    private string selectedStockSymbol = "AAPL";
 
+    public string SelectedStockSymbol
+    {
+        get => selectedStockSymbol;
+        set
+        {
+            selectedStockSymbol = value ?? "AAPL";
+            RefreshChart();
+        }
+    }
     private void HandleChartTypeChanged(string chartType)
     {
         selectedChartType = chartType;
@@ -54,7 +69,7 @@
 
     private void RefreshChart()
     {
-        chartComponent?.RefreshChart(selectedChartType, selectedInterval, selectedRange, startDate, endDate);
+        chartComponent?.RefreshChart(selectedStockSymbol, selectedChartType, selectedInterval, selectedRange, startDate, endDate);
     }
 
     protected override void OnAfterRender(bool firstRender)

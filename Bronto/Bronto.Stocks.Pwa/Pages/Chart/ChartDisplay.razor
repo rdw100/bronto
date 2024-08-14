@@ -1,15 +1,20 @@
 ﻿@page "/chartdisplay"
+@using Bronto.Models.Api.Chart
+@using Bronto.Shared
+@using Bronto.Stocks.Pwa.Interfaces
+@using Bronto.Stocks.Pwa.Services
 @using ScottPlot.Blazor
 @using ScottPlot.Finance
 @using ScottPlot.Plottable
 @using ScottPlot
+@inject IChartService chartService
 
 <BlazorPlot @ref="blazorPlot" Style="width:500px;height:250px;" />
 
 @code {
     private BlazorPlot blazorPlot;
 
-    public void RefreshChart(string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
+    public async Task RefreshChart(string symbol, string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
     {
         var plt = blazorPlot.Plot;
         plt.Clear();
@@ -19,19 +24,19 @@
         switch (range)
         {
             case "1d":
-                prices = Generate.RandomOHLCs(1);
+                prices = await LoadData(symbol, interval, range);
                 break;
             case "5d":
-                prices = Generate.RandomOHLCs(5);
+                prices = await LoadData(symbol, interval, range);
                 break;
             case "1m":
-                prices = Generate.RandomOHLCs(30);
+                prices = await LoadData(symbol, interval, range);
                 break;
             case "3m":
-                prices = Generate.RandomOHLCs(90);
+                prices = await LoadData(symbol, interval, range);
                 break;
             default:
-                prices = Generate.RandomOHLCs(1);
+                prices = await LoadData(symbol, interval, range);
                 break;
         }
 
@@ -40,46 +45,22 @@
             case "Moving":
                 plt.Add.Candlestick(prices);
                 plt.Axes.DateTimeTicksBottom();
-                // plt = await ChartHelper.PlotSmaCurves(plt, prices);
-                // int[] windowSizes = { 3, 8, 20 };
-                // foreach (int windowSize in windowSizes)
-                // {
-                //     // Calculate SMA
-                //     SimpleMovingAverage sma = new(prices, windowSize);
 
-                //     // Plot the SMA on the provided BlazorPlot
-                //     var sp = plt.Add.Scatter(sma.Dates, sma.Means);
-                //     sp.LegendText = $"SMA {windowSize}";
-                //     sp.MarkerSize = 0;
-                //     sp.LineWidth = 3;
-                //     sp.Color = Colors.Navy.WithAlpha(1 - windowSize / 30.0);
-                // }
-                
-                // plt.ShowLegend();
+                if (prices.Count >= 20)
+                {
+                    plt = ChartHelper.PlotSmaCurves(plt, prices);                 
+                    plt.ShowLegend();
+                }
                 break;
             case "Bollinger":
                 plt.Add.Candlestick(prices);
                 plt.Axes.DateTimeTicksBottom();
-                //plt = await ChartHelper.PlotBollinger(plt, prices);
-                // // calculate Bollinger Bands
-                // BollingerBands bb = new(prices, 20);
 
-                // // display center line (mean) as a solid line
-                // var sp1 = plt.Add.Scatter(bb.Dates, bb.Means);
-                // sp1.MarkerSize = 0;
-                // sp1.Color = Colors.Navy;
-
-                // // display upper bands (positive variance) as a dashed line
-                // var sp2 = plt.Add.Scatter(bb.Dates, bb.UpperValues);
-                // sp2.MarkerSize = 0;
-                // sp2.Color = Colors.Navy;
-                // sp2.LinePattern = LinePattern.Dotted;
-
-                // // display lower bands (positive variance) as a dashed line
-                // var sp3 = plt.Add.Scatter(bb.Dates, bb.LowerValues);
-                // sp3.MarkerSize = 0;
-                // sp3.Color = Colors.Navy;
-                // sp3.LinePattern = LinePattern.Dotted;
+                if (prices.Count >= 20)
+                {
+                    plt = ChartHelper.PlotBollinger(plt, prices);
+                    plt.ShowLegend();
+                }
                 break;
             case "Candlestick":
                 plt.Add.Candlestick(prices);
@@ -92,5 +73,25 @@
         plt.YLabel("Value");
 
         blazorPlot.Refresh();
+    }
+
+    private async Task<List<OHLC>> LoadData(string symbol, string interval, string range)
+    {
+        ChartResult ChartDataList = new();
+        ChartDataList = await chartService.GetChartData(symbol, interval, range);
+
+        List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
+            .Select((open, index) => new OHLC
+                {
+                    Open = open,
+                    High = ChartDataList.Chart.Result[0].Indicators.Quote[0].High[index],
+                    Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
+                    Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
+                    DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
+                    TimeSpan = (range == "1d") ? TimeSpan.FromHours(1) : TimeSpan.FromDays(1)
+                })
+            .ToList();
+
+        return ohlcList;
     }
 }

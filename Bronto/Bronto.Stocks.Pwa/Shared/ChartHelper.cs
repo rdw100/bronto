@@ -3,7 +3,7 @@ using ScottPlot.Finance;
 
 public static class ChartHelper
 {
-    public static async Task<Plot> PlotSmaCurves(Plot plot, List<OHLC> prices)
+    public static Plot PlotSmaCurves(Plot plot, List<OHLC> prices)
     {
         int[] windowSizes = { 3, 8, 20 };
         foreach (int windowSize in windowSizes)
@@ -22,7 +22,18 @@ public static class ChartHelper
         return plot;
     }
 
-    public static async Task<Plot> PlotBollinger(Plot plot, List<OHLC> prices)
+    /// <summary>
+    /// Price envelopes define upper and lower price range levels.
+    /// </summary>
+    /// <param name="plot">The financial plot displays price data binned into time ranges</param>
+    /// <param name="prices">The price data</param>
+    /// <returns>Returns a finance plots that displays price data binned into time ranges</returns>
+    /// <remarks>Typical values used: 
+    /// Short term: 10 day moving average, bands at 1.5 standard deviations. (1.5 times the standard dev. +/- the SMA)
+    /// Medium term: 20 day moving average, bands at 2 standard deviations.
+    /// Long term: 50 day moving average, bands at 2.5 standard deviations.
+    /// </remarks>
+    public static Plot PlotBollinger(Plot plot, List<OHLC> prices)
     {
         // calculate Bollinger Bands
         BollingerBands bb = new(prices, 20);
