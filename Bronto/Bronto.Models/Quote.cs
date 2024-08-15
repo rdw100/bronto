@@ -46,7 +46,7 @@
 
         [JsonPropertyName("regularMarketChangePercent")]
         public double RegularMarketChangePercent { get; set; }
-
+        
         [JsonPropertyName("regularMarketPrice")]
         public double RegularMarketPrice { get; set; }
 
