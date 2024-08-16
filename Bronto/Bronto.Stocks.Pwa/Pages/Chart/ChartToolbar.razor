@@ -3,7 +3,7 @@
 @using ScottPlot
 @using ScottPlot.Blazor
 
-<FluentToolbar>
+<FluentToolbar Style="border: 4px dashed var(--accent-fill-rest); width: 100%; margin-bottom: 24px;">
     <FluentSelect @bind-Value="selectedChartType" @onchange="HandleChartTypeChange" TOption="string">
         <FluentOption Value="Moving">Moving</FluentOption>
         <FluentOption Value="Bollinger">Bollinger</FluentOption>
@@ -19,8 +19,8 @@
     <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="string">
         <FluentRadio Value=@("1d")>1 Day</FluentRadio>
         <FluentRadio Value=@("5d")>5 Days</FluentRadio>
-        <FluentRadio Value=@("1m")>1 Month</FluentRadio>
-        <FluentRadio Value=@("3m")>3 Months</FluentRadio>
+        <FluentRadio Value=@("1mo")>1 Month</FluentRadio>
+        <FluentRadio Value=@("3mo")>3 Months</FluentRadio>
     </FluentRadioGroup>
 
     <FluentDatePicker @onchange="HandleDateChangeStart" />
@@ -66,7 +66,7 @@
     {
         string targetValue = e.Value?.ToString();
 
-        if (targetValue == "1d" || targetValue == "5d" || targetValue == "1m" || targetValue == "3m")
+        if (targetValue == "1d" || targetValue == "5d" || targetValue == "1mo" || targetValue == "3mo")
         {
             selectedRange = targetValue;
             await OnRangeChanged.InvokeAsync(selectedRange);

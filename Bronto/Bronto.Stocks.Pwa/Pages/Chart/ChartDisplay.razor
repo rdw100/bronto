@@ -9,9 +9,12 @@
 @using ScottPlot
 @inject IChartService chartService
 
-<BlazorPlot @ref="blazorPlot" />
+<BlazorPlot @ref="blazorPlot" Style="@(ChartStyles)" />
 
 @code {
+    [Parameter]
+    public string ChartStyles { get; set; }
+    
     private BlazorPlot blazorPlot;
 
     public async Task RefreshChart(string symbol, string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)

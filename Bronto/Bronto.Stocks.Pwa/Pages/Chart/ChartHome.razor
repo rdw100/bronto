@@ -1,10 +1,19 @@
 ﻿@page "/charthome"
+@using BlazorPro.BlazorSize
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Pages.Chart
 @using ScottPlot
 @using ScottPlot.Blazor
+@inject IResizeListener listener
 
-<h3>Parent Component</h3>
+<p>This component demonstrates adaptive rendering of a Blazor UI.</p>
+
+<h3>Width: @browser.Width</h3>
+<h3>Height: @browser.Height</h3>
+<h3>MQ: @IsXSmallMedia</h3>
+<h4>Chart: @selectedChartType</h4>
+<h4>Interval: @selectedInterval</h4>
+<h4>Range: @selectedRange</h4>
 
 <h6>Select a Stock Symbol    
     <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
@@ -17,7 +26,7 @@
     OnStartDateChanged="HandleStartDateChanged"
     OnEndDateChanged="HandleEndDateChanged" />
 
-<ChartDisplay @ref="chartComponent" />
+<ChartDisplay @ref="chartComponent" ChartStyles="@(chartStyle)" />
 
 <QuoteSummary Symbol="@SelectedStockSymbol" />
 
@@ -25,6 +34,7 @@
     private string selectedChartType = "Moving";
     private string selectedInterval = "1d";
     private string selectedRange = "5d";
+    private string chartStyle = "width: 1536px; height: 864px;";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
     private ChartDisplay chartComponent;
@@ -78,7 +88,51 @@
     {
         if (firstRender)
         {
+            // Subscribe to the OnResized event. This will do work when the browser is resized.
+            listener.OnResized += WindowResized;
             RefreshChart();
         }
+    }
+
+    BrowserWindowSize browser = new BrowserWindowSize();
+
+    bool IsXSmallMedia = false;
+    bool IsMediumMedia = false;
+    bool IsLargeMedia = false;
+
+    async void WindowResized(object _, BrowserWindowSize window)
+    {
+        // Get the browsers's width / height
+        browser = window;
+
+        // Check a media query to see if it was matched. We can do this at any time, but it's best to check on each resize
+        IsXSmallMedia = await listener.MatchMedia(Breakpoints.XSmallDown);
+        IsMediumMedia = await listener.MatchMedia(Breakpoints.MediumDown);
+        IsLargeMedia = await listener.MatchMedia(Breakpoints.LargeDown);
+
+        if (window.Width < 320)
+        {
+            chartStyle = "width: 300px; height: 200;";
+        }
+        else if (IsXSmallMedia || window.Width < 575)
+        {
+            chartStyle = "width: 500px; height: 300px;";
+        }
+        else if (IsMediumMedia || window.Width < 990)
+        {
+            chartStyle = "width: 700px; height: 500px;";
+        }
+        else if (IsLargeMedia || window.Width < 1199)
+        {
+            chartStyle = "width: 900px; height: 700px;";
+        }
+
+        // We're outside of the component's lifecycle, be sure to let it know it has to re-render.
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        listener.OnResized -= WindowResized;
     }
 }
