@@ -1,31 +1,42 @@
-﻿@using ScottPlot.Blazor
+﻿@using Bronto.Models.Api
+@using Bronto.Models.Api.Chart
+@using Bronto.Shared
+@using Bronto.Stocks.Pwa.Interfaces
+@using ScottPlot.Blazor
 @using ScottPlot.Plottable
 @using ScottPlot
+@inject IChartService chartService
 
 <BlazorPlot @ref="blazorPlot" />
 
 @code {
     private BlazorPlot blazorPlot;
 
-    public void RefreshChart(string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
+    public async Task RefreshChart(string symbol, string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
     {
         var plt = blazorPlot.Plot;
         plt.Clear();
 
         // Generate sample data based on range and interval
         double[] data;
+        List<OHLC> prices = new();
+
         switch (range)
         {
             case "1d":
+                prices = await LoadData(symbol, interval, range);
                 data = GenerateRandomWalkData(24); // 24 data points for 1 day
                 break;
             case "5d":
+                prices = Generate.RandomOHLCs(30);
                 data = GenerateRandomWalkData(24 * 5); // 5 days
                 break;
-            case "1m":
+            case "1mo":
+                prices = Generate.RandomOHLCs(30);
                 data = GenerateRandomWalkData(24 * 30); // 1 month
                 break;
             default:
+                prices = Generate.RandomOHLCs(30);
                 data = GenerateRandomWalkData(24); // default to 1 day
                 break;
         }
@@ -33,13 +44,23 @@
         switch (chartType)
         {
             case "Moving":
-                plt.Add.Signal(data);
+                plt.Add.Candlestick(prices);
+                plt.Axes.DateTimeTicksBottom();
+
+                await PlotTimeSeries(blazorPlot, prices);
+
+                plt.ShowLegend();
+
                 break;
-            case "Bolinger":
+            case "Bollinger":
                 // Add Bollinger Bands logic here
+                plt.Add.Candlestick(prices);
+                plt.Axes.DateTimeTicksBottom();
                 break;
             case "Candlestick":
                 // Add Candlestick chart logic here
+                plt.Add.Candlestick(prices);
+                plt.Axes.DateTimeTicksBottom();
                 break;
         }
 
@@ -61,8 +82,51 @@
         }
         return data;
     }
+
+    private async Task<BlazorPlot> PlotTimeSeries(BlazorPlot plot, List<OHLC> prices)
+    {
+        // calculate SMA and display it as a scatter plot
+        int[] windowSizes = { 3, 8, 20 };
+        foreach (int windowSize in windowSizes)
+        {
+            ScottPlot.Finance.SimpleMovingAverage sma = new(prices, windowSize);
+            var sp = plot.Plot.Add.Scatter(sma.Dates, sma.Means);
+            sp.LegendText = $"SMA {windowSize}";
+            sp.MarkerSize = 0;
+            sp.LineWidth = 3;
+            sp.Color = Colors.Navy.WithAlpha(1 - windowSize / 30.0);
+        }
+
+        return plot;
+    }
+
+    private async Task<List<OHLC>> LoadData(string symbol, string interval, string range)
+    {
+        return await GetStocks(symbol, interval, range);
+    }
+
+    private async Task<List<OHLC>> GetStocks(string symbol, string interval, string range)
+    {
+        ChartResult ChartDataList = new();
+        ChartDataList = await chartService.GetChartData(symbol, interval, range);
+
+        List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
+            .Select((open, index) => new OHLC
+                {
+                    Open = open,
+                    High = ChartDataList.Chart.Result[0].Indicators.Quote[0].High[index],
+                    Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
+                    Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
+                    DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
+                    TimeSpan = TimeSpan.FromDays(1.0)
+                })
+            .ToList();
+
+        return ohlcList;
+    }
+
     public void Dispose()
     {
         blazorPlot.Plot?.Dispose();
-    }
+    }    
 }

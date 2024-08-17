@@ -4,37 +4,77 @@
 <h3>Parent Component</h3>
 
 <FluentToolbar>
-    <FluentSelect @bind-Value="selectedChartType" @onchange="OnChartControlChanged" TOption="string">
-        <FluentOption value="Moving">Moving</FluentOption>
-        <FluentOption value="Bolinger">Bolinger</FluentOption>
-        <FluentOption value="Candlestick">Candlestick</FluentOption>
+    <FluentSelect @bind-Value="selectedChartType" TOption="string" @onchange="HandleChange">
+        <FluentOption Value="Moving">Moving</FluentOption>
+        <FluentOption Value="Bollinger">Bollinger</FluentOption>
+        <FluentOption Value="Candlestick">Candlestick</FluentOption>
     </FluentSelect>
 
-    <FluentSelect @bind-Value="selectedInterval" @onchange="OnChartControlChanged" TOption="string">
-        <FluentOption value="1h">1 Hour</FluentOption>
-        <FluentOption value="4h">4 Hours</FluentOption>
-        <FluentOption value="1d">1 Day</FluentOption>
+    <FluentSelect @bind-Value="selectedInterval" TOption="string" @onchange="HandleChange">
+        <FluentOption Value="1h">1 Hour</FluentOption>
+        <FluentOption Value="4h">4 Hours</FluentOption>
+        <FluentOption Value="1d">1 Day</FluentOption>
     </FluentSelect>
 
-    <FluentRadioGroup @bind-Value="selectedRange" @onchange="OnChartControlChanged">
-        <FluentRadio value="1d">1 Day</FluentRadio>
-        <FluentRadio value="5d">5 Days</FluentRadio>
-        <FluentRadio value="1m">1 Month</FluentRadio>
+    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleChange">
+        <FluentRadio Value="1d">1 Day</FluentRadio>
+        <FluentRadio Value="5d">5 Days</FluentRadio>
+        <FluentRadio Value="1m">1 Month</FluentRadio>
     </FluentRadioGroup>
 
-    <FluentDatePicker Label="Start Date" @bind-Value="startDate" @onchange="OnChartControlChanged" />
-    <FluentDatePicker Label="End Date" @bind-Value="endDate" @onchange="OnChartControlChanged" />
+    <FluentDatePicker Label="Start Date" @bind-Value="startDate" @onchange="HandleDateChangeStart" />
+    <FluentDatePicker Label="End Date" @bind-Value="endDate" @onchange="HandleDateChangeEnd" />
 </FluentToolbar>
 
 <ChartComponent @ref="chartComponent" />
 
 @code {
     private string selectedChartType = "Moving";
-    private string selectedInterval = "1h";
-    private string selectedRange = "1d";
+    private string selectedInterval = "1d";
+    private string selectedRange = "5d";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
     private ChartComponent chartComponent;
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+        string targetValue = e.Value?.ToString();
+
+        if (targetValue == "Moving" || targetValue == "Bollinger" || targetValue == "Candlestick")
+        {
+            selectedChartType = targetValue;
+        }
+        else if (targetValue == "1h" || targetValue == "4h" || targetValue == "1d")
+        {
+            selectedInterval = targetValue;
+        }
+        else if (targetValue == "1d" || targetValue == "5d" || targetValue == "1m")
+        {
+            selectedRange = targetValue;
+        }
+
+        RefreshChart();
+    }
+
+    private void HandleDateChangeStart(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dateValue))
+        {
+            startDate = dateValue;
+        }
+
+        RefreshChart();
+    }
+
+    private void HandleDateChangeEnd(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dateValue))
+        {
+            endDate = dateValue;
+        }
+
+        RefreshChart();
+    }
 
     private void OnChartControlChanged(ChangeEventArgs e)
     {
@@ -43,7 +83,7 @@
 
     private void RefreshChart()
     {
-        chartComponent.RefreshChart(selectedChartType, selectedInterval, selectedRange, startDate, endDate);
+        chartComponent.RefreshChart("AAPL", selectedChartType, selectedInterval, selectedRange, startDate, endDate);
     }
 
     protected override void OnAfterRender(bool firstRender)
