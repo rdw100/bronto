@@ -58,7 +58,7 @@ else if (ChartDataList is not null)
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4"><BlazorPlot @ref=BlazorPlot Style="width: 320px; height: 220px;" /></td>
+                    <td colspan="4"><BlazorPlot @ref=BlazorPlot Style="@ChartStyles" /></td>
                 </tr>
                 <tr>
                     <th scope="row">Open:</th>
@@ -101,7 +101,8 @@ else if (ChartDataList is not null)
     public string Interval { get; set; } = "1d";
     public string Range { get; set; } = StockRange.ThreeMonths.GetStringValue();
     public DesignThemeModes Mode { get; set; }
-
+    [Parameter]
+    public string ChartStyles { get; set; }
     BlazorPlot BlazorPlot { get; set; } = new();
 
     // Display Price change data

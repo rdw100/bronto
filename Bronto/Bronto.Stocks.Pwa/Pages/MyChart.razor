@@ -33,7 +33,7 @@
         <FluentOption Value="1d">1d</FluentOption>
     </FluentSelect>
     <FluentSelect Name="TbChartType" Id="TbChartType" TOption="string" @bind-Value="@selectedOption">
-        <FluentOption Value="Bolinger">Bolinger</FluentOption>
+        <FluentOption Value="Bollinger">Bolinger</FluentOption>
         <FluentOption Value="Candlestick">Candlestick</FluentOption>
         <FluentOption Value="Moving">Moving</FluentOption>
         <FluentOption Value="OHLC">OHLC</FluentOption>
@@ -92,7 +92,7 @@
         Interval="@selectedInterval" 
         Range="@selectedRange"/>
 }
-else if (selectedOption == "Bolinger")
+else if (selectedOption == "Bollinger")
 {
     <Bollinger ChartStyles="@(chartStyle)" />
 }
