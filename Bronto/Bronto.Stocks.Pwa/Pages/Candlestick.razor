@@ -207,11 +207,7 @@ else if (ChartDataList is not null)
 
         return prices;
     }
-}
 
-<p>Last refreshed at: @lastRefreshedTime</p>
-
-@code {
     private string lastRefreshedTime;
 
     public void Refresh()
@@ -221,3 +217,5 @@ else if (ChartDataList is not null)
         StateHasChanged();
     }
 }
+
+<p>Last refreshed at: @lastRefreshedTime</p>
