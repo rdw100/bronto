@@ -1,0 +1,58 @@
+﻿@using Bronto.Models.Api.Chart
+@using Bronto.Shared
+@using Bronto.Stocks.Pwa.Interfaces
+@using Microsoft.FluentUI.AspNetCore.Components
+@using System.Globalization
+@inject IChartService chartService
+
+@if (Data != null)
+{
+    <h3>@Data.Symbol: @Data.FullExchangeName</h3>
+
+    <h4>
+        <span>@Data.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
+        <span style="color: @ChangeColor;">@ChangeString</span>
+        <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
+    </h4>
+
+    <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6>
+}
+else
+{
+    <p>Loading ...</p>
+    <div style="width: 300px;display: grid; grid-gap: 12px; grid-auto-flow: column;">
+        <FluentProgressRing></FluentProgressRing>
+    </div>
+}
+
+@code {
+    private Meta Data { get; set; }
+
+    [Parameter]
+    public string Symbol { get; set; } 
+
+    // Display Price change data
+    private double regularMarketPrice;
+    private double chartPreviousClose;
+    private double Change => regularMarketPrice - chartPreviousClose;
+    private double PercentageChange => (Change / chartPreviousClose) * 100;
+    private string ChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
+    private string PercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
+    private string ChangeColor => Change > 0 ? "green" : "red";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData(Symbol);
+    }
+
+    private async Task<Meta> LoadData(string symbol)
+    {
+        ChartResult ChartDataList = await chartService.GetChartData(symbol);
+        Data = ChartDataList.Chart.Result[0].Meta;
+        
+        regularMarketPrice = Data.RegularMarketPrice;
+        chartPreviousClose = Data.ChartPreviousClose;
+
+        return Data;
+    }
+}
