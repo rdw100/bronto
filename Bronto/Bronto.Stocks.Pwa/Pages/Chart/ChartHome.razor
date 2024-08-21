@@ -19,6 +19,8 @@
     <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
 </h6>
 
+<ChartSummary Symbol="@SelectedStockSymbol"/>
+
 <ChartToolbar
     OnChartTypeChanged="HandleChartTypeChanged"
     OnIntervalChanged="HandleIntervalChanged"

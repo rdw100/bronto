@@ -1,9 +1,9 @@
-﻿@using Bronto.Models.Api.Chart
+﻿@using Bronto.Models.Api.Quote
 @using Bronto.Shared
 @using Bronto.Stocks.Pwa.Interfaces
 @using Microsoft.FluentUI.AspNetCore.Components
 @using System.Globalization
-@inject IChartService chartService
+@inject IQuoteService quoteService
 
 @if (Data != null)
 {
@@ -14,7 +14,7 @@
         <span style="color: @ChangeColor;">@ChangeString</span>
         <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
     </h4>
-
+    
     <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6>
 }
 else
@@ -26,32 +26,31 @@ else
 }
 
 @code {
-    private Meta Data { get; set; }
+    private Result Data { get; set; }
 
     [Parameter]
     public string Symbol { get; set; } 
 
-    // Display Price change data
-    private double regularMarketPrice;
-    private double chartPreviousClose;
-    private double Change => regularMarketPrice - chartPreviousClose;
-    private double PercentageChange => (Change / chartPreviousClose) * 100;
+    private double Change;
+    private double PercentageChange;  
     private string ChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
     private string PercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
     private string ChangeColor => Change > 0 ? "green" : "red";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData(Symbol);
+        Data = await LoadData(Symbol);
+        Change = Data.RegularMarketChange;
+        PercentageChange = Data.RegularMarketChangePercent;
     }
 
-    private async Task<Meta> LoadData(string symbol)
+    private async Task<Result> LoadData(string symbol)
     {
-        ChartResult ChartDataList = await chartService.GetChartData(symbol);
-        Data = ChartDataList.Chart.Result[0].Meta;
-        
-        regularMarketPrice = Data.RegularMarketPrice;
-        chartPreviousClose = Data.ChartPreviousClose;
+        var quoteData = await quoteService.GetQuote(Symbol);
+        Data = quoteData.QuoteResponse.Result[0];
+
+        // Change = Data.RegularMarketChange;
+        // PercentageChange = Data.PreMarketChangePercent;
 
         return Data;
     }
