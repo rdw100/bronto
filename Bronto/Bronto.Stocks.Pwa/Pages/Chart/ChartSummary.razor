@@ -7,66 +7,64 @@
 
 @if (Data != null)
 {
-    <FluentGrid Spacing="@Spacing" AdaptiveRendering="true" Justify="@Justification" Style=" padding: 4px; ">
-        <FluentGridItem xs="12">
-            <FluentCard >
-                <h6>@Data.FullExchangeName - @Data.QuoteSourceName @Data.Currency</h6>
+    <FluentGridItem xs="12">
+        <FluentCard >
+            <h6>@Data.FullExchangeName - @Data.QuoteSourceName @Data.Currency</h6>
 
-                <h4>
-                    <span>@Data.LongName</span>
-                    <span>(@Data.Symbol)</span>
-                </h4>
-            </FluentCard>
-        </FluentGridItem>   
-        <FluentGridItem xs="6" sm="3">
-            <FluentCard >
-                <h3>Market Price</h3>
-                <h4>
-                    <span>@Data.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
-                    <span style="color: @ChangeColor;">@ChangeString</span>
-                    <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
-                </h4>
-                <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6>
-            </FluentCard >
-        </FluentGridItem>
-        <FluentGridItem xs="6" sm="3">
-            <FluentCard >
-                <h3>Pre-Market Price</h3>
-                <h4>
-                    <span>@Data.PreMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
-                    <span style="color: @PreChangeColor;">@PreChangeString</span>
-                    <span style="color: @PreChangeColor;">(@PrePercentageChangeString)</span>
-                </h4>
-                <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.PreMarketTime)</h6>
-            </FluentCard >
-        </FluentGridItem>
-        <FluentGridItem xs="6" sm="3">
-            <FluentCard >
-                <h3>52-Day Average</h3>
-                <h4>
-                    <span>@Data.FiftyDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
-                    <span style="color: @FiftyTwoChangeColor;">@FiftyTwoChangeString</span>
-                    <span style="color: @FiftyTwoChangeColor;">(@FiftyTwoPercentageChangeString)</span>
-                </h4>
-            </FluentCard >
-        </FluentGridItem>
-        <FluentGridItem xs="6" sm="3">
-            <FluentCard >
-                <h3>200-Day Average</h3>
-                <h4>
-                    <span>@Data.TwoHundredDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
-                    <span style="color: @TwoHundredChangeColor;">@TwoHundredChangeString</span>
-                    <span style="color: @TwoHundredChangeColor;">(@TwoHundredPercentageChangeString)</span>
-                </h4>
-            </FluentCard >
-        </FluentGridItem>
-    </FluentGrid>
+            <h4>
+                <span>@Data.LongName</span>
+                <span>(@Data.Symbol)</span>
+            </h4>
+        </FluentCard>
+    </FluentGridItem>   
+    <FluentGridItem xs="6" sm="3">
+        <FluentCard >
+            <h3>Market Price</h3>
+            <h4>
+                <span>@Data.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
+                <span style="color: @ChangeColor;">@ChangeString</span>
+                <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
+            </h4>
+            <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6>
+        </FluentCard >
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <FluentCard >
+            <h3>Pre-Market Price</h3>
+            <h4>
+                <span>@Data.PreMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
+                <span style="color: @PreChangeColor;">@PreChangeString</span>
+                <span style="color: @PreChangeColor;">(@PrePercentageChangeString)</span>
+            </h4>
+            <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.PreMarketTime)</h6>
+        </FluentCard >
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <FluentCard >
+            <h3>52-Day Average</h3>
+            <h4>
+                <span>@Data.FiftyDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
+                <span style="color: @FiftyTwoChangeColor;">@FiftyTwoChangeString</span>
+                <span style="color: @FiftyTwoChangeColor;">(@FiftyTwoPercentageChangeString)</span>
+            </h4>
+        </FluentCard >
+    </FluentGridItem>
+    <FluentGridItem xs="6" sm="3">
+        <FluentCard >
+            <h3>200-Day Average</h3>
+            <h4>
+                <span>@Data.TwoHundredDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
+                <span style="color: @TwoHundredChangeColor;">@TwoHundredChangeString</span>
+                <span style="color: @TwoHundredChangeColor;">(@TwoHundredPercentageChangeString)</span>
+            </h4>
+        </FluentCard >
+    </FluentGridItem>
 }
 else
 {
     <p>Loading ...</p>
     <div style="width: 300px;display: grid; grid-gap: 12px; grid-auto-flow: column;">
-        <FluentProgressRing></FluentProgressRing>
+        <FluentProgress></FluentProgress>
     </div>
 }
 
@@ -84,24 +82,21 @@ else
 
     private double PreChange;
     private double PrePercentageChange;
-    private string PreChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
-    private string PrePercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
-    private string PreChangeColor => Change > 0 ? "green" : "red";
+    private string PreChangeString => PreChange > 0 ? $"+{PreChange:F2}" : $"{PreChange:F2}";
+    private string PrePercentageChangeString => PreChange > 0 ? $"+{PrePercentageChange:F2}%" : $"{PrePercentageChange:F2}%";
+    private string PreChangeColor => PreChange > 0 ? "green" : "red";
 
     private double TwoHundredChange;
     private double TwoHundredPercentageChange;
-    private string TwoHundredChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
-    private string TwoHundredPercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
-    private string TwoHundredChangeColor => Change > 0 ? "green" : "red";
+    private string TwoHundredChangeString => TwoHundredChange > 0 ? $"+{TwoHundredChange:F2}" : $"{TwoHundredChange:F2}";
+    private string TwoHundredPercentageChangeString => TwoHundredChange > 0 ? $"+{TwoHundredPercentageChange:F2}%" : $"{TwoHundredPercentageChange:F2}%";
+    private string TwoHundredChangeColor => TwoHundredChange > 0 ? "green" : "red";
 
     private double FiftyTwoChange;
     private double FiftyTwoPercentageChange;
-    private string FiftyTwoChangeString => Change > 0 ? $"+{Change:F2}" : $"{Change:F2}";
-    private string FiftyTwoPercentageChangeString => Change > 0 ? $"+{PercentageChange:F2}%" : $"{PercentageChange:F2}%";
-    private string FiftyTwoChangeColor => Change > 0 ? "green" : "red";
-
-    JustifyContent Justification = JustifyContent.FlexStart;
-    int Spacing = 1;
+    private string FiftyTwoChangeString => FiftyTwoChange > 0 ? $"+{FiftyTwoChange:F2}" : $"{FiftyTwoChange:F2}";
+    private string FiftyTwoPercentageChangeString => FiftyTwoChange > 0 ? $"+{FiftyTwoPercentageChange:F2}%" : $"{FiftyTwoPercentageChange:F2}%";
+    private string FiftyTwoChangeColor => FiftyTwoChange > 0 ? "green" : "red";
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,7 +105,7 @@ else
         PercentageChange = Data.RegularMarketChangePercent;
         PreChange = Data.PreMarketChange;
         PrePercentageChange = Data.PreMarketChangePercent;
-        TwoHundredChange = Data.TwoHundredDayAverage;
+        TwoHundredChange = Data.TwoHundredDayAverageChange;
         TwoHundredPercentageChange = Data.TwoHundredDayAverageChangePercent;
         FiftyTwoChange = Data.FiftyDayAverageChange;
         FiftyTwoPercentageChange = Data.FiftyDayAverageChangePercent;

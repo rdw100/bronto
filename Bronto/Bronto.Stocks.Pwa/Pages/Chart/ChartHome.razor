@@ -2,41 +2,56 @@
 @using BlazorPro.BlazorSize
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Pages.Chart
+@using Microsoft.FluentUI.AspNetCore.Components
 @using ScottPlot
 @using ScottPlot.Blazor
 @inject IResizeListener listener
 
 <p>This component demonstrates adaptive rendering of a Blazor UI.</p>
 
-<h3>Width: @browser.Width</h3>
-<h3>Height: @browser.Height</h3>
-<h3>MQ: @IsXSmallMedia</h3>
-<h4>Chart: @selectedChartType</h4>
-<h4>Interval: @selectedInterval</h4>
-<h4>Range: @selectedRange</h4>
+    <FluentGrid Spacing="@Spacing" AdaptiveRendering="true" Justify="@Justification" Style=" padding: 4px; ">
+        <FluentGridItem xs="12">
+            <h6>Select a Stock Symbol    
+                <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
+            </h6>
+            @* <FluentSpacer /> *@
+            <h6>Width: @browser.Width</h6>
+            <h6>Height: @browser.Height</h6>
+            <h6>MQ: @IsXSmallMedia</h6>
+            <h6>Chart: @selectedChartType</h6>
+            <h6>Interval: @selectedInterval</h6>
+            <h6>Range: @selectedRange</h6>
+        </FluentGridItem>
 
-<h6>Select a Stock Symbol    
-    <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
-</h6>
+        <ChartSummary Symbol="@SelectedStockSymbol"/>
 
-<ChartSummary Symbol="@SelectedStockSymbol"/>
+        <FluentGridItem xs="12">
+            <FluentCard >
 
-<ChartToolbar
-    OnChartTypeChanged="HandleChartTypeChanged"
-    OnIntervalChanged="HandleIntervalChanged"
-    OnRangeChanged="HandleRangeChanged"
-    OnStartDateChanged="HandleStartDateChanged"
-    OnEndDateChanged="HandleEndDateChanged" />
+                <ChartToolbar
+                    OnChartTypeChanged="HandleChartTypeChanged"
+                    OnIntervalChanged="HandleIntervalChanged"
+                    OnRangeChanged="HandleRangeChanged"
+                    OnStartDateChanged="HandleStartDateChanged"
+                    OnEndDateChanged="HandleEndDateChanged" />
 
-<ChartDisplay @ref="chartComponent" ChartStyles="@(chartStyle)" />
-
-<QuoteSummary Symbol="@SelectedStockSymbol" />
-
+                <ChartDisplay @ref="chartComponent" ChartStyles="@(chartStyle)" />
+            
+            </FluentCard>
+        </FluentGridItem>        
+        <FluentGridItem xs="12">
+            <FluentCard >
+                <QuoteSummary Symbol="@SelectedStockSymbol" />
+            </FluentCard>
+        </FluentGridItem>
+    </FluentGrid>
 @code {
+    JustifyContent Justification = JustifyContent.FlexStart;
+    int Spacing = 1;
     private string selectedChartType = "Moving";
     private string selectedInterval = "1d";
     private string selectedRange = "5d";
-    private string chartStyle = "width: 1536px; height: 864px;";
+    private string chartStyle = "width: 320px; height: 240px;";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
     private ChartDisplay chartComponent;
