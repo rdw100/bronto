@@ -14,7 +14,7 @@
 @code {
     [Parameter]
     public string ChartStyles { get; set; }
-    
+
     private BlazorPlot blazorPlot;
 
     public async Task RefreshChart(string symbol, string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
@@ -51,7 +51,7 @@
 
                 if (prices.Count >= 20)
                 {
-                    plt = ChartHelper.PlotSmaCurves(plt, prices);                 
+                    plt = ChartHelper.PlotSmaCurves(plt, prices);
                     plt.ShowLegend();
                 }
                 break;
@@ -65,7 +65,7 @@
                     plt.ShowLegend();
                 }
                 break;
-            case "Candlestick":
+            case "Candlestick": 
                 plt.Add.Candlestick(prices);
                 plt.Axes.DateTimeTicksBottom();
                 break;
@@ -73,7 +73,7 @@
 
         plt.Title($"Data for {range} - {interval} - {chartType}");
         plt.XLabel("Time");
-        plt.YLabel("Value");
+        plt.YLabel("Price");
 
         blazorPlot.Refresh();
     }
@@ -83,6 +83,28 @@
         ChartResult ChartDataList = new();
         ChartDataList = await chartService.GetChartData(symbol, interval, range);
 
+        TimeSpan intervalTimeSpan = new();
+        switch (interval)
+        {
+            case "5m":
+                intervalTimeSpan = TimeSpan.FromMinutes(5);
+                break;
+            case "15m":
+                intervalTimeSpan = TimeSpan.FromMinutes(15);
+                break;
+            case "30m":
+                intervalTimeSpan = TimeSpan.FromMinutes(30);
+                break;
+            case "1h":
+                intervalTimeSpan = TimeSpan.FromHours(1);
+                break;
+            case "1d":
+                intervalTimeSpan = TimeSpan.FromDays(1);
+                break;
+            default:
+                throw new ArgumentException("Invalid interval");
+        }
+
         List<OHLC> ohlcList = ChartDataList.Chart.Result[0].Indicators.Quote[0].Open
             .Select((open, index) => new OHLC
                 {
@@ -91,7 +113,8 @@
                     Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
                     Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
                     DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
-                    TimeSpan = (range == "1d") ? TimeSpan.FromHours(1) : TimeSpan.FromDays(1)
+                    TimeSpan = intervalTimeSpan 
+                    // TimeSpan.FromDays(1) // (range == "1d") ? TimeSpan.FromHours(1) : TimeSpan.FromDays(1)
                 })
             .ToList();
 

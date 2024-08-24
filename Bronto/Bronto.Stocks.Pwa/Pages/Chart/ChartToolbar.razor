@@ -4,16 +4,18 @@
 @using ScottPlot.Blazor
 
 <FluentToolbar Style="border: 4px dashed var(--accent-fill-rest); width: 100%; margin-bottom: 24px;">
-    <FluentSelect @bind-Value="selectedChartType" @onchange="HandleChartTypeChange" TOption="string">
+    <FluentSelect Id="chart-listbox" @bind-Value="selectedChartType" @onchange="HandleChartTypeChange" TOption="string">
         <FluentOption Value="Moving">Moving</FluentOption>
         <FluentOption Value="Bollinger">Bollinger</FluentOption>
         <FluentOption Value="Candlestick">Candlestick</FluentOption>
     </FluentSelect>
 
-    <FluentSelect @bind-Value="selectedInterval" @onchange="HandleIntervalChange" TOption="string">
-        <FluentOption Value="1h">1 Hour</FluentOption>
-        <FluentOption Value="4h">4 Hours</FluentOption>
-        <FluentOption Value="1d">1 Day</FluentOption>
+    <FluentSelect Id="interval-listbox" @bind-Value="selectedInterval" @onchange="HandleIntervalChange" TOption="string">
+        <FluentOption Value=@("5m")>5 min</FluentOption>
+        <FluentOption Value=@("15m")>15 min</FluentOption>
+        <FluentOption Value=@("30m")>30 min</FluentOption>
+        <FluentOption Value=@("1h")>1 Hour</FluentOption>
+        <FluentOption Value=@("1d")>1 Day</FluentOption>
     </FluentSelect>
 
     <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="string">
@@ -55,7 +57,7 @@
     {
         string targetValue = e.Value?.ToString();
 
-        if (targetValue == "1h" || targetValue == "4h" || targetValue == "1d")
+        if (targetValue == "5m" || targetValue == "15m" || targetValue == "30m" || targetValue == "1h" || targetValue == "1d")
         {
             selectedInterval = targetValue;
             await OnIntervalChanged.InvokeAsync(selectedInterval);
