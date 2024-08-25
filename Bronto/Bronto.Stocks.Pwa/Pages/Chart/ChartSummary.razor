@@ -7,57 +7,46 @@
 
 @if (Data != null)
 {
-    <FluentGridItem xs="12">
-        <FluentCard >
+    <FluentGridItem xs="6" sm="3">
+        <FluentCard>
             <h6>@Data.FullExchangeName - @Data.QuoteSourceName @Data.Currency</h6>
 
-            <h4>
+            <h5>
                 <span>@Data.LongName</span>
                 <span>(@Data.Symbol)</span>
-            </h4>
+            </h5>
         </FluentCard>
-    </FluentGridItem>   
+    </FluentGridItem>
     <FluentGridItem xs="6" sm="3">
-        <FluentCard >
-            <h3>Market Price</h3>
-            <h4>
+        <FluentCard>
+            <h6>Market Price</h6>
+            <h5>
                 <span>@Data.RegularMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
                 <span style="color: @ChangeColor;">@ChangeString</span>
                 <span style="color: @ChangeColor;">(@PercentageChangeString)</span>
-            </h4>
-            <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6>
-        </FluentCard >
+            </h5>
+            @* <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.RegularMarketTime)</h6> *@
+        </FluentCard>
     </FluentGridItem>
     <FluentGridItem xs="6" sm="3">
-        <FluentCard >
-            <h3>Pre-Market Price</h3>
-            <h4>
-                <span>@Data.PreMarketPrice.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
-                <span style="color: @PreChangeColor;">@PreChangeString</span>
-                <span style="color: @PreChangeColor;">(@PrePercentageChangeString)</span>
-            </h4>
-            <h6>Updated: @UnixTimestampCalculator.ToDateTime(Data.PreMarketTime)</h6>
-        </FluentCard >
-    </FluentGridItem>
-    <FluentGridItem xs="6" sm="3">
-        <FluentCard >
-            <h3>52-Day Average</h3>
-            <h4>
+        <FluentCard>
+            <h6>52-Day Average</h6>
+            <h5>
                 <span>@Data.FiftyDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
                 <span style="color: @FiftyTwoChangeColor;">@FiftyTwoChangeString</span>
                 <span style="color: @FiftyTwoChangeColor;">(@FiftyTwoPercentageChangeString)</span>
-            </h4>
-        </FluentCard >
+            </h5>
+        </FluentCard>
     </FluentGridItem>
     <FluentGridItem xs="6" sm="3">
-        <FluentCard >
-            <h3>200-Day Average</h3>
-            <h4>
+        <FluentCard>
+            <h6>200-Day Average</h6>
+            <h5>
                 <span>@Data.TwoHundredDayAverage.ToString("C", CultureInfo.CurrentCulture) @Data.Currency</span>
                 <span style="color: @TwoHundredChangeColor;">@TwoHundredChangeString</span>
                 <span style="color: @TwoHundredChangeColor;">(@TwoHundredPercentageChangeString)</span>
-            </h4>
-        </FluentCard >
+            </h5>
+        </FluentCard>
     </FluentGridItem>
 }
 else

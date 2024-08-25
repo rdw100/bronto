@@ -7,51 +7,54 @@
 @using ScottPlot.Blazor
 @inject IResizeListener listener
 
-<p>This component demonstrates adaptive rendering of a Blazor UI.</p>
+<FluentGrid Spacing="@Spacing" AdaptiveRendering="true" Justify="@Justification" Style="padding: 4px;">
 
-    <FluentGrid Spacing="@Spacing" AdaptiveRendering="true" Justify="@Justification" Style=" padding: 4px; ">
-        <FluentGridItem xs="12">
-            <h6>Select a Stock Symbol    
-                <StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" />
-            </h6>
-            @* <FluentSpacer /> *@
-            <h6>Width: @browser.Width</h6>
-            <h6>Height: @browser.Height</h6>
-            <h6>MQ: @IsXSmallMedia</h6>
-            <h6>Chart: @selectedChartType</h6>
-            <h6>Interval: @selectedInterval</h6>
-            <h6>Range: @selectedRange</h6>
-        </FluentGridItem>
+    <FluentGridItem xs="12">
+        <div class="card">
+            <h6>Select a Stock Symbol&nbsp;&nbsp;<StockCombo @bind-SelectedStockSymbol="SelectedStockSymbol" /></h6>            
+        </div>
+    </FluentGridItem>
 
-        <ChartSummary Symbol="@SelectedStockSymbol"/>
+    <ChartSummary Symbol="@SelectedStockSymbol" />
 
-        <FluentGridItem xs="12">
-            <FluentCard >
+    <FluentGridItem xs="12">
+        <div class="card">
+            <ChartToolbar
+                OnChartTypeChanged="HandleChartTypeChanged"
+                OnIntervalChanged="HandleIntervalChanged"
+                OnRangeChanged="HandleRangeChanged"
+                OnStartDateChanged="HandleStartDateChanged"
+                OnEndDateChanged="HandleEndDateChanged" />
+        </div>
+        <div class="card">
+            <ChartDisplay @ref="chartComponent" ChartStyles="@(chartStyle)" />
+        </div>          
+    </FluentGridItem>        
+    <FluentGridItem xs="12">
+        <FluentCard >
+            <QuoteSummary Symbol="@SelectedStockSymbol" />
+        </FluentCard>
+    </FluentGridItem>
+</FluentGrid>
+<FluentAccordion ActiveId="@activeId" OnAccordionItemChange="HandleOnAccordionItemChange">
+    <FluentAccordionItem Heading="Adaptive Rendering">
+        <FluentIcon Value="@(new Icons.Regular.Size20.Globe())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" Slot="start" />
+        <h6>Width: @browser.Width</h6>
+        <h6>Height: @browser.Height</h6>
+        <h6>MQ: @IsXSmallMedia</h6>
+        <h6>Chart: @selectedChartType</h6>
+        <h6>Interval: @selectedInterval</h6>
+        <h6>Range: @selectedRange</h6>
+    </FluentAccordionItem>
+</FluentAccordion>
 
-                <ChartToolbar
-                    OnChartTypeChanged="HandleChartTypeChanged"
-                    OnIntervalChanged="HandleIntervalChanged"
-                    OnRangeChanged="HandleRangeChanged"
-                    OnStartDateChanged="HandleStartDateChanged"
-                    OnEndDateChanged="HandleEndDateChanged" />
-
-                <ChartDisplay @ref="chartComponent" ChartStyles="@(chartStyle)" />
-            
-            </FluentCard>
-        </FluentGridItem>        
-        <FluentGridItem xs="12">
-            <FluentCard >
-                <QuoteSummary Symbol="@SelectedStockSymbol" />
-            </FluentCard>
-        </FluentGridItem>
-    </FluentGrid>
 @code {
     JustifyContent Justification = JustifyContent.FlexStart;
     int Spacing = 1;
     private string selectedChartType = "Moving";
     private string selectedInterval = "1d";
     private string selectedRange = "5d";
-    private string chartStyle = "width: 320px; height: 240px;";
+    private string chartStyle = "width: 640px; height: 480px;";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
     private ChartDisplay chartComponent;
@@ -151,5 +154,14 @@
     public void Dispose()
     {
         listener.OnResized -= WindowResized;
+    }
+
+    string activeId = "accordion-1";
+
+    FluentAccordionItem? changed;
+
+    private void HandleOnAccordionItemChange(FluentAccordionItem item)
+    {
+        changed = item;
     }
 }
