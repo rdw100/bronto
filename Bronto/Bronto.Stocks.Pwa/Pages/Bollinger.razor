@@ -51,12 +51,12 @@ else if (ChartDataList is not null)
                 <tr>
                     <td colspan="4">
                         <FluentStack HorizontalGap="10">
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths.GetStringValue())">3m</FluentButton>
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths.GetStringValue())">6m</FluentButton>
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear.GetStringValue())">1y</FluentButton>
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TwoYears.GetStringValue())">2y</FluentButton>
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveYears.GetStringValue())">5y</FluentButton>
-                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TenYears.GetStringValue())">10y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.ThreeMonths)">3m</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.SixMonths)">6m</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.OneYear)">1y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TwoYears)">2y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.FiveYears)">5y</FluentButton>
+                            <FluentButton Appearance="Appearance.Outline" OnClick="()=>LoadChart(_selectedStockSymbol, Interval, StockRange.TenYears)">10y</FluentButton>
                         </FluentStack>
                     </td>
                 </tr>
@@ -104,7 +104,7 @@ else if (ChartDataList is not null)
     }
 
     public string Interval { get; set; } = "1d";
-    public string Range { get; set; } = StockRange.ThreeMonths.GetStringValue();
+    public StockRange Range { get; set; } = StockRange.ThreeMonths;
     public DesignThemeModes Mode { get; set; }
     [Parameter]
     public string ChartStyles { get; set; }
@@ -129,7 +129,7 @@ else if (ChartDataList is not null)
     }
 
     // get and plot time series price data
-    private async Task LoadChart(string symbol, string interval, string range)
+    private async Task LoadChart(string symbol, string interval, StockRange range)
     {
         try
         {
@@ -146,7 +146,7 @@ else if (ChartDataList is not null)
         }
     }
 
-    private async Task LoadData(string symbol, string interval, string range)
+    private async Task LoadData(string symbol, string interval, StockRange range)
     {
         prices = null;
         prices = await GetStocks(symbol, interval, range);
@@ -194,7 +194,7 @@ else if (ChartDataList is not null)
         };
     }
 
-    protected async Task<List<OHLC>> GetStocks(string symbol, string interval, string range)
+    protected async Task<List<OHLC>> GetStocks(string symbol, string interval, StockRange range)
     {
         ChartDataList = await chartService.GetChartData(symbol, interval, range);
 

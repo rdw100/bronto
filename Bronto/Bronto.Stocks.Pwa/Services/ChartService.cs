@@ -1,5 +1,6 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
+using Bronto.Models.Enums;
 using Bronto.Stocks.Pwa.Interfaces;
 using System.Net.Http.Json;
 using static Bronto.Models.Api.Enums;
@@ -15,13 +16,13 @@ namespace Bronto.Stocks.Pwa.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ChartResult> GetChartData(string symbol, string interval, string range)
+        public async Task<ChartResult> GetChartData(string symbol, string interval, StockRange range)
         {
             var chart = new ChartResult();
 
             try
             {
-                var response = await _httpClient.GetAsync($"api/Chart?symbol={symbol}&interval={interval}&range={range}");
+                var response = await _httpClient.GetAsync($"api/Chart?symbol={symbol}&interval={interval}&range={range.GetStringValue()}");
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -1,4 +1,5 @@
 ﻿@page "/charttoolbar"
+@using Bronto.Models.Enums
 @using Microsoft.FluentUI.AspNetCore.Components
 @using ScottPlot
 @using ScottPlot.Blazor
@@ -18,11 +19,13 @@
         <FluentOption Value=@("1d")>1 Day</FluentOption>
     </FluentSelect>
 
-    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="string">
-        <FluentRadio Value=@("1d")>1 Day</FluentRadio>
-        <FluentRadio Value=@("5d")>5 Days</FluentRadio>
-        <FluentRadio Value=@("1mo")>1 Month</FluentRadio>
-        <FluentRadio Value=@("3mo")>3 Months</FluentRadio>
+    <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="StockRange">
+        <FluentRadio Value=@(StockRange.OneDay)>1D</FluentRadio>
+        <FluentRadio Value=@(StockRange.FiveDays) Checked="true">5D</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneMonth)>1M</FluentRadio>
+        <FluentRadio Value=@(StockRange.ThreeMonths)>3M</FluentRadio>
+        <FluentRadio Value=@(StockRange.SixMonths)>6M</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneYear)>1Y</FluentRadio>
     </FluentRadioGroup>
 
     <FluentDatePicker @onchange="HandleDateChangeStart" />
@@ -32,13 +35,13 @@
 @code {
     [Parameter] public EventCallback<string> OnChartTypeChanged { get; set; }
     [Parameter] public EventCallback<string> OnIntervalChanged { get; set; }
-    [Parameter] public EventCallback<string> OnRangeChanged { get; set; }
+    [Parameter] public EventCallback<StockRange> OnRangeChanged { get; set; }
     [Parameter] public EventCallback<DateTime?> OnStartDateChanged { get; set; }
     [Parameter] public EventCallback<DateTime?> OnEndDateChanged { get; set; }
 
     private string selectedChartType = "Moving";
     private string selectedInterval = "1d";
-    private string selectedRange = "5d";
+    private StockRange selectedRange = StockRange.FiveDays;
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
 
@@ -52,7 +55,7 @@
             await OnChartTypeChanged.InvokeAsync(selectedChartType);
         }
     }
-    
+
     private async Task HandleIntervalChange(ChangeEventArgs e)
     {
         string targetValue = e.Value?.ToString();
@@ -66,9 +69,21 @@
 
     private async Task HandleRangeChange(ChangeEventArgs e)
     {
-        string targetValue = e.Value?.ToString();
+        //string targetValue = e.Value?.ToString();
+        // if (e.Value is string value && Enum.TryParse(typeof(StockRange), value, out var result))
+        // {           
+        // }
 
-        if (targetValue == "1d" || targetValue == "5d" || targetValue == "1mo" || targetValue == "3mo")
+        StockRange targetValue = e.Value is string value && Enum.TryParse(value, out StockRange result) ? result : throw new ArgumentException("Invalid range selected");
+        //targetValue = (StockRange)targetValue;
+        //StockRange targetValue = (StockRange)e.Value;
+
+        if (targetValue == StockRange.OneDay 
+            || targetValue == StockRange.FiveDays 
+            || targetValue == StockRange.OneMonth 
+            || targetValue == StockRange.ThreeMonths 
+            || targetValue == StockRange.SixMonths 
+            || targetValue == StockRange.OneYear)
         {
             selectedRange = targetValue;
             await OnRangeChanged.InvokeAsync(selectedRange);

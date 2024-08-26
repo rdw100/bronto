@@ -1,5 +1,6 @@
 ﻿using Bronto.Models;
 using Bronto.Models.Api.Chart;
+using Bronto.Models.Enums;
 
 namespace Bronto.Stocks.Pwa.Interfaces
 {
@@ -8,7 +9,7 @@ namespace Bronto.Stocks.Pwa.Interfaces
         Task<ChartResult> GetChartData(
             string symbol,
             string interval = "1d",
-            string range = "5d"
+            StockRange range = StockRange.FiveDays
         );
     }
 }

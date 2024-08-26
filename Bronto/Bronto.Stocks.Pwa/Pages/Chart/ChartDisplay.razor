@@ -1,5 +1,6 @@
 ﻿@page "/chartdisplay"
 @using Bronto.Models.Api.Chart
+@using Bronto.Models.Enums
 @using Bronto.Shared
 @using Bronto.Stocks.Pwa.Interfaces
 @using Bronto.Stocks.Pwa.Services
@@ -17,25 +18,32 @@
 
     private BlazorPlot blazorPlot;
 
-    public async Task RefreshChart(string symbol, string chartType, string interval, string range, DateTime? startDate, DateTime? endDate)
+    public async Task RefreshChart(string symbol, string chartType, string interval, StockRange range, DateTime? startDate, DateTime? endDate)
     {
         var plt = blazorPlot.Plot;
         plt.Clear();
 
         // Generate sample data based on range and interval
         List<OHLC> prices = new();
+
         switch (range)
         {
-            case "1d":
+            case StockRange.OneDay:
                 prices = await LoadData(symbol, interval, range);
                 break;
-            case "5d":
+            case StockRange.FiveDays:
                 prices = await LoadData(symbol, interval, range);
                 break;
-            case "1m":
+            case StockRange.OneMonth:
                 prices = await LoadData(symbol, interval, range);
                 break;
-            case "3m":
+            case StockRange.ThreeMonths:
+                prices = await LoadData(symbol, interval, range);
+                break;
+            case StockRange.SixMonths:
+                prices = await LoadData(symbol, interval, range);
+                break;
+            case StockRange.OneYear:
                 prices = await LoadData(symbol, interval, range);
                 break;
             default:
@@ -78,7 +86,7 @@
         blazorPlot.Refresh();
     }
 
-    private async Task<List<OHLC>> LoadData(string symbol, string interval, string range)
+    private async Task<List<OHLC>> LoadData(string symbol, string interval, StockRange range)
     {
         ChartResult ChartDataList = new();
         ChartDataList = await chartService.GetChartData(symbol, interval, range);
