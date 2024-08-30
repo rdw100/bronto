@@ -1,5 +1,6 @@
 ﻿@page "/charthome"
 @using BlazorPro.BlazorSize
+@using Bronto.Models
 @using Bronto.Models.Enums
 @using Bronto.Stocks.Pwa.Components
 @using Bronto.Stocks.Pwa.Pages.Chart
@@ -54,7 +55,7 @@
     JustifyContent Justification = JustifyContent.FlexStart;
     int Spacing = 1;
     private string selectedChartType = "Moving";
-    private string selectedInterval = "1d";
+    private StockInterval selectedInterval = StockInterval.OneDay;
     private StockRange selectedRange = StockRange.FiveDays;
     private string chartStyle = "width: 640px; height: 480px;";
     private DateTime? startDate = DateTime.Today.AddDays(-7);
@@ -77,7 +78,7 @@
         RefreshChart();
     }
 
-    private void HandleIntervalChanged(string interval)
+    private void HandleIntervalChanged(StockInterval interval)
     {
         selectedInterval = interval;
         RefreshChart();
@@ -104,6 +105,7 @@
     private void RefreshChart()
     {
         chartComponent?.RefreshChart(selectedStockSymbol, selectedChartType, selectedInterval, selectedRange, startDate, endDate);
+        
     }
 
     protected override void OnAfterRender(bool firstRender)

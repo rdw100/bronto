@@ -19,18 +19,20 @@
     <FluentDatePicker Label="Start Date" />
     <FluentDatePicker Label="End Date" />
 
-    <FluentRadioGroup @bind-Value=selectedRange >
-        <FluentRadio Value=@(StockRange.OneDay.GetStringValue()) Checked="true">1D</FluentRadio>
-        <FluentRadio Value=@(StockRange.FiveDays.GetStringValue())>5D</FluentRadio>
-        <FluentRadio Value=@(StockRange.OneMonth.GetStringValue())>1M</FluentRadio>
-        <FluentRadio Value=@(StockRange.ThreeMonths.GetStringValue())>3M</FluentRadio>
-        <FluentRadio Value=@(StockRange.SixMonths.GetStringValue())>6M</FluentRadio>
-        <FluentRadio Value=@(StockRange.OneYear.GetStringValue())>1Y</FluentRadio>
+    <FluentRadioGroup @bind-Value=@selectedRange >
+        <FluentRadio Value=@(StockRange.OneDay) Checked="true">1D</FluentRadio>
+        <FluentRadio Value=@(StockRange.FiveDays)>5D</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneMonth)>1M</FluentRadio>
+        <FluentRadio Value=@(StockRange.ThreeMonths)>3M</FluentRadio>
+        <FluentRadio Value=@(StockRange.SixMonths)>6M</FluentRadio>
+        <FluentRadio Value=@(StockRange.OneYear)>1Y</FluentRadio>
     </FluentRadioGroup>
-    <FluentSelect Name="ChartInterval" Id="ChartInterval" TOption="string" @bind-Value="@selectedInterval">
-        <FluentOption Value="1h">1h</FluentOption>
-        <FluentOption Value="4h">4h</FluentOption>
-        <FluentOption Value="1d">1d</FluentOption>
+    <FluentSelect 
+        ValueChanged="@(e => selectedInterval = Enum.TryParse(e, out StockInterval result) ? result : throw new ArgumentException("Invalid interval selected"))"
+        TOption="StockInterval">
+        <FluentOption Value=@(StockInterval.FifteenMinutes.GetStringValue())>15m</FluentOption>
+        <FluentOption Value=@(StockInterval.OneHour.GetStringValue())>1h</FluentOption>
+        <FluentOption Value=@(StockInterval.OneDay.GetStringValue())>1d</FluentOption>
     </FluentSelect>
     <FluentSelect Name="TbChartType" Id="TbChartType" TOption="string" @bind-Value="@selectedOption">
         <FluentOption Value="Bollinger">Bolinger</FluentOption>
@@ -64,7 +66,7 @@ else if (selectedOption == "OHLC")
 
 @code {
     string selectedOption = "Candlestick";
-    string selectedInterval = "1d";
+    StockInterval selectedInterval = StockInterval.OneDay;
     StockRange selectedRange = StockRange.FiveDays;
     private string chartStyle = "width: 1024px; height: 768px;";
     private Candlestick candlestickChart;

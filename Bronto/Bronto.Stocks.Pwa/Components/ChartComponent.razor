@@ -1,4 +1,5 @@
-﻿@using Bronto.Models.Api
+﻿@using Bronto.Models
+@using Bronto.Models.Api
 @using Bronto.Models.Api.Chart
 @using Bronto.Models.Enums
 @using Bronto.Shared
@@ -13,7 +14,7 @@
 @code {
     private BlazorPlot blazorPlot;
 
-    public async Task RefreshChart(string symbol, string chartType, string interval, StockRange range, DateTime? startDate, DateTime? endDate)
+    public async Task RefreshChart(string symbol, string chartType, StockInterval interval, StockRange range, DateTime? startDate, DateTime? endDate)
     {
         var plt = blazorPlot.Plot;
         plt.Clear();
@@ -101,12 +102,12 @@
         return plot;
     }
 
-    private async Task<List<OHLC>> LoadData(string symbol, string interval, StockRange range)
+    private async Task<List<OHLC>> LoadData(string symbol, StockInterval interval, StockRange range)
     {
         return await GetStocks(symbol, interval, range);
     }
 
-    private async Task<List<OHLC>> GetStocks(string symbol, string interval, StockRange range)
+    private async Task<List<OHLC>> GetStocks(string symbol, StockInterval interval, StockRange range)
     {
         ChartResult ChartDataList = new();
         ChartDataList = await chartService.GetChartData(symbol, interval, range);

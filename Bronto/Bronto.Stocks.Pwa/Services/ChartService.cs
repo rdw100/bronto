@@ -16,13 +16,13 @@ namespace Bronto.Stocks.Pwa.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ChartResult> GetChartData(string symbol, string interval, StockRange range)
+        public async Task<ChartResult> GetChartData(string symbol, StockInterval interval, StockRange range)
         {
             var chart = new ChartResult();
 
             try
             {
-                var response = await _httpClient.GetAsync($"api/Chart?symbol={symbol}&interval={interval}&range={range.GetStringValue()}");
+                var response = await _httpClient.GetAsync($"api/Chart?symbol={symbol}&interval={interval.GetStringValue()}&range={range.GetStringValue()}");
 
                 if (response.IsSuccessStatusCode)
                 {

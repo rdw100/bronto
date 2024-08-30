@@ -10,13 +10,13 @@
         <FluentOption Value="Bollinger">Bollinger</FluentOption>
         <FluentOption Value="Candlestick">Candlestick</FluentOption>
     </FluentSelect>
-
-    <FluentSelect Id="interval-listbox" @bind-Value="selectedInterval" @onchange="HandleIntervalChange" TOption="string">
-        <FluentOption Value=@("5m")>5 min</FluentOption>
-        <FluentOption Value=@("15m")>15 min</FluentOption>
-        <FluentOption Value=@("30m")>30 min</FluentOption>
-        <FluentOption Value=@("1h")>1 Hour</FluentOption>
-        <FluentOption Value=@("1d")>1 Day</FluentOption>
+    @*  *@
+    <FluentSelect @bind-SelectedOption="selectedInterval" @onchange="HandleIntervalChange" TOption="StockInterval">
+        <FluentOption TOption="StockInterval" Value=@StockInterval.FiveMinutes.ToString()>5 min</FluentOption>
+        <FluentOption TOption="StockInterval" Value=@StockInterval.FifteenMinutes.ToString()>15 min</FluentOption>
+        <FluentOption TOption="StockInterval" Value=@StockInterval.ThirtyMinutes.ToString()>30 min</FluentOption>
+        <FluentOption TOption="StockInterval" Value=@StockInterval.OneHour.ToString()>1 Hour</FluentOption>
+        <FluentOption TOption="StockInterval" Value=@StockInterval.OneDay.ToString() Selected>1 Day</FluentOption>
     </FluentSelect>
 
     <FluentRadioGroup @bind-Value="selectedRange" @onchange="HandleRangeChange" TValue="StockRange">
@@ -34,13 +34,13 @@
 
 @code {
     [Parameter] public EventCallback<string> OnChartTypeChanged { get; set; }
-    [Parameter] public EventCallback<string> OnIntervalChanged { get; set; }
+    [Parameter] public EventCallback<StockInterval> OnIntervalChanged { get; set; }
     [Parameter] public EventCallback<StockRange> OnRangeChanged { get; set; }
     [Parameter] public EventCallback<DateTime?> OnStartDateChanged { get; set; }
     [Parameter] public EventCallback<DateTime?> OnEndDateChanged { get; set; }
 
     private string selectedChartType = "Moving";
-    private string selectedInterval = "1d";
+    private StockInterval selectedInterval = StockInterval.OneDay;
     private StockRange selectedRange = StockRange.FiveDays;
     private DateTime? startDate = DateTime.Today.AddDays(-7);
     private DateTime? endDate = DateTime.Today;
@@ -58,9 +58,13 @@
 
     private async Task HandleIntervalChange(ChangeEventArgs e)
     {
-        string targetValue = e.Value?.ToString();
+        StockInterval targetValue = e.Value is string value && Enum.TryParse(value, out StockInterval result) ? result : throw new ArgumentException("Invalid range selected");
 
-        if (targetValue == "5m" || targetValue == "15m" || targetValue == "30m" || targetValue == "1h" || targetValue == "1d")
+        if (targetValue == StockInterval.FiveMinutes
+            || targetValue == StockInterval.FifteenMinutes
+            || targetValue == StockInterval.ThirtyMinutes
+            || targetValue == StockInterval.OneHour
+            || targetValue == StockInterval.OneDay)
         {
             selectedInterval = targetValue;
             await OnIntervalChanged.InvokeAsync(selectedInterval);
@@ -69,14 +73,7 @@
 
     private async Task HandleRangeChange(ChangeEventArgs e)
     {
-        //string targetValue = e.Value?.ToString();
-        // if (e.Value is string value && Enum.TryParse(typeof(StockRange), value, out var result))
-        // {           
-        // }
-
         StockRange targetValue = e.Value is string value && Enum.TryParse(value, out StockRange result) ? result : throw new ArgumentException("Invalid range selected");
-        //targetValue = (StockRange)targetValue;
-        //StockRange targetValue = (StockRange)e.Value;
 
         if (targetValue == StockRange.OneDay 
             || targetValue == StockRange.FiveDays 

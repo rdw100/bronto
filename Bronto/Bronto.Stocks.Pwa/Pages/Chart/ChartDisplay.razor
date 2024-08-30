@@ -1,4 +1,5 @@
 ﻿@page "/chartdisplay"
+@using Bronto.Models
 @using Bronto.Models.Api.Chart
 @using Bronto.Models.Enums
 @using Bronto.Shared
@@ -18,8 +19,9 @@
 
     private BlazorPlot blazorPlot;
 
-    public async Task RefreshChart(string symbol, string chartType, string interval, StockRange range, DateTime? startDate, DateTime? endDate)
+    public async Task RefreshChart(string symbol, string chartType, StockInterval interval, StockRange range, DateTime? startDate, DateTime? endDate)
     {
+        blazorPlot.Reset();
         var plt = blazorPlot.Plot;
         plt.Clear();
 
@@ -57,7 +59,7 @@
                 plt.Add.Candlestick(prices);
                 plt.Axes.DateTimeTicksBottom();
 
-                if (prices.Count >= 20)
+                if (range >= StockRange.OneMonth)
                 {
                     plt = ChartHelper.PlotSmaCurves(plt, prices);
                     plt.ShowLegend();
@@ -67,7 +69,7 @@
                 plt.Add.Candlestick(prices);
                 plt.Axes.DateTimeTicksBottom();
 
-                if (prices.Count >= 20)
+                if (range >= StockRange.OneMonth)
                 {
                     plt = ChartHelper.PlotBollinger(plt, prices);
                     plt.ShowLegend();
@@ -86,7 +88,7 @@
         blazorPlot.Refresh();
     }
 
-    private async Task<List<OHLC>> LoadData(string symbol, string interval, StockRange range)
+    private async Task<List<OHLC>> LoadData(string symbol, StockInterval interval, StockRange range)
     {
         ChartResult ChartDataList = new();
         ChartDataList = await chartService.GetChartData(symbol, interval, range);
@@ -94,19 +96,19 @@
         TimeSpan intervalTimeSpan = new();
         switch (interval)
         {
-            case "5m":
+            case StockInterval.FiveMinutes:
                 intervalTimeSpan = TimeSpan.FromMinutes(5);
                 break;
-            case "15m":
+            case StockInterval.FifteenMinutes:
                 intervalTimeSpan = TimeSpan.FromMinutes(15);
                 break;
-            case "30m":
+            case StockInterval.ThirtyMinutes:
                 intervalTimeSpan = TimeSpan.FromMinutes(30);
                 break;
-            case "1h":
+            case StockInterval.OneHour:
                 intervalTimeSpan = TimeSpan.FromHours(1);
                 break;
-            case "1d":
+            case StockInterval.OneDay:
                 intervalTimeSpan = TimeSpan.FromDays(1);
                 break;
             default:
@@ -121,8 +123,7 @@
                     Low = ChartDataList.Chart.Result[0].Indicators.Quote[0].Low[index],
                     Close = ChartDataList.Chart.Result[0].Indicators.Quote[0].Close[index],
                     DateTime = UnixTimestampCalculator.ToDateTime(ChartDataList.Chart.Result[0].Timestamp[index]),
-                    TimeSpan = intervalTimeSpan 
-                    // TimeSpan.FromDays(1) // (range == "1d") ? TimeSpan.FromHours(1) : TimeSpan.FromDays(1)
+                    TimeSpan = intervalTimeSpan
                 })
             .ToList();
 

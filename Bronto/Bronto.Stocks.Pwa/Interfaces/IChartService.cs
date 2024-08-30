@@ -8,7 +8,7 @@ namespace Bronto.Stocks.Pwa.Interfaces
     {
         Task<ChartResult> GetChartData(
             string symbol,
-            string interval = "1d",
+            StockInterval interval = StockInterval.OneDay,
             StockRange range = StockRange.FiveDays
         );
     }

@@ -1,4 +1,5 @@
 ﻿@page "/bollinger"
+@using Bronto.Models
 @using Bronto.Models.Api
 @using Bronto.Models.Api.Chart
 @using Bronto.Models.Enums
@@ -103,7 +104,7 @@ else if (ChartDataList is not null)
         }
     }
 
-    public string Interval { get; set; } = "1d";
+    public StockInterval Interval { get; set; } = StockInterval.OneDay;
     public StockRange Range { get; set; } = StockRange.ThreeMonths;
     public DesignThemeModes Mode { get; set; }
     [Parameter]
@@ -129,7 +130,7 @@ else if (ChartDataList is not null)
     }
 
     // get and plot time series price data
-    private async Task LoadChart(string symbol, string interval, StockRange range)
+    private async Task LoadChart(string symbol, StockInterval interval, StockRange range)
     {
         try
         {
@@ -146,7 +147,7 @@ else if (ChartDataList is not null)
         }
     }
 
-    private async Task LoadData(string symbol, string interval, StockRange range)
+    private async Task LoadData(string symbol, StockInterval interval, StockRange range)
     {
         prices = null;
         prices = await GetStocks(symbol, interval, range);
@@ -194,7 +195,7 @@ else if (ChartDataList is not null)
         };
     }
 
-    protected async Task<List<OHLC>> GetStocks(string symbol, string interval, StockRange range)
+    protected async Task<List<OHLC>> GetStocks(string symbol, StockInterval interval, StockRange range)
     {
         ChartDataList = await chartService.GetChartData(symbol, interval, range);
 
